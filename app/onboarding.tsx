@@ -326,48 +326,41 @@ export default function OnboardingScreen() {
           style={[styles.screen, styles.essenceScreen, essenceAnimatedStyle, dissolveAnimatedStyle]}
           entering={FadeIn.duration(800)}
         >
-          {/* Headline */}
-          <SafeText style={styles.essenceHeadline}>HOW IT WORKS</SafeText>
+          {/* Welcome */}
+          <SafeText style={styles.welcomeTitle}>Welcome to Recovery Pulse</SafeText>
 
-          {/* Step-by-step guide */}
-          <View style={styles.stepsContainer}>
-            <View style={styles.stepRow}>
-              <SafeText style={styles.stepNumber}>1</SafeText>
-              <View style={styles.stepContent}>
-                <SafeText style={styles.stepTitle}>Daily Check-In</SafeText>
-                <SafeText style={styles.stepDescription}>
-                  Each morning, log your sleep hours, sleep quality, fatigue level, and muscle soreness using simple sliders.
-                </SafeText>
-              </View>
-            </View>
-
-            <View style={styles.stepRow}>
-              <SafeText style={styles.stepNumber}>2</SafeText>
-              <View style={styles.stepContent}>
-                <SafeText style={styles.stepTitle}>Recovery Score</SafeText>
-                <SafeText style={styles.stepDescription}>
-                  Your inputs are calculated into a 0-100 Recovery Score. Green (80+) = train hard. Red (below 40) = rest day.
-                </SafeText>
-              </View>
-            </View>
-
-            <View style={styles.stepRow}>
-              <SafeText style={styles.stepNumber}>3</SafeText>
-              <View style={styles.stepContent}>
-                <SafeText style={styles.stepTitle}>Track Trends</SafeText>
-                <SafeText style={styles.stepDescription}>
-                  View your 7-day history and weekly average to understand your recovery patterns over time.
-                </SafeText>
-              </View>
-            </View>
-          </View>
-
-          {/* Navigation hint */}
-          <SafeText style={styles.navHint}>
-            Pulse = Today's Score  •  Check-In = Log Data  •  Trends = History
+          <SafeText style={styles.welcomeSubtitle}>
+            This app helps you track how well your body is recovering so you know when to train hard and when to rest.
           </SafeText>
 
-          {/* CTA Button with 3D Glass border */}
+          {/* What to do */}
+          <View style={styles.instructionBlock}>
+            <SafeText style={styles.instructionTitle}>Every Morning</SafeText>
+            <SafeText style={styles.instructionText}>
+              Open the app and tap "Check-In" at the bottom. Use the sliders to log how you slept and how your body feels. It takes 30 seconds.
+            </SafeText>
+          </View>
+
+          <View style={styles.instructionBlock}>
+            <SafeText style={styles.instructionTitle}>Your Recovery Score</SafeText>
+            <SafeText style={styles.instructionText}>
+              Based on your input, you get a score from 0 to 100.{'\n'}
+              • 80-100 (Green) = You're recovered. Train hard.{'\n'}
+              • 60-79 (Gold) = Moderate. Normal training.{'\n'}
+              • Below 60 (Red) = Take it easy. Rest day.
+            </SafeText>
+          </View>
+
+          <View style={styles.instructionBlock}>
+            <SafeText style={styles.instructionTitle}>The Bottom Tabs</SafeText>
+            <SafeText style={styles.instructionText}>
+              • Pulse — Your dashboard with today's score{'\n'}
+              • Check-In — Where you log your daily data{'\n'}
+              • Trends — See your scores over the past week
+            </SafeText>
+          </View>
+
+          {/* CTA Button */}
           <Animated.View
             style={[
               styles.essenceButtonContainer,
@@ -383,7 +376,7 @@ export default function OnboardingScreen() {
                   style={styles.essenceButtonText}
                   onPress={handleContinueToSecurity}
                 >
-                  BEGIN TRACKING
+                  GET STARTED
                 </SafeText>
               </SapphireCard>
             </View>
@@ -457,68 +450,41 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  // Screen 3: Essence
+  // Screen 3: Essence - Simple readable layout
   essenceScreen: {
     justifyContent: 'flex-start',
-    paddingTop: 100,
+    paddingTop: 80,
+    paddingHorizontal: 24,
   },
-  essenceHeadline: {
-    fontSize: 24,
-    lineHeight: 30,
-    fontWeight: '300',
-    letterSpacing: 6,
-    color: 'rgba(212, 175, 55, 0.9)',
-    textTransform: 'uppercase',
-    textAlign: 'center',
-    marginBottom: SPACING.xl,
-  },
-  stepsContainer: {
-    paddingHorizontal: SPACING.lg,
-    gap: SPACING.lg,
-  },
-  stepRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: SPACING.md,
-  },
-  stepNumber: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: 'rgba(212, 175, 55, 0.6)',
-    width: 24,
-    height: 24,
-    lineHeight: 24,
-    textAlign: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.4)',
-    borderRadius: 12,
-    marginTop: 2,
-  },
-  stepContent: {
-    flex: 1,
-    gap: 4,
-  },
-  stepTitle: {
-    fontSize: 17,
+  welcomeTitle: {
+    fontSize: 22,
     fontWeight: '600',
-    color: 'rgba(212, 175, 55, 1)',
-    letterSpacing: 0.5,
-    marginBottom: 4,
+    color: '#D4AF37',
+    textAlign: 'center',
+    marginBottom: 12,
   },
-  stepDescription: {
+  welcomeSubtitle: {
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.8)',
+    textAlign: 'center',
+    marginBottom: 32,
+  },
+  instructionBlock: {
+    marginBottom: 24,
+  },
+  instructionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#D4AF37',
+    marginBottom: 8,
+  },
+  instructionText: {
     fontSize: 14,
-    lineHeight: 21,
+    lineHeight: 22,
     fontWeight: '400',
     color: 'rgba(255, 255, 255, 0.85)',
-  },
-  navHint: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: 'rgba(212, 175, 55, 0.7)',
-    textAlign: 'center',
-    letterSpacing: 0.5,
-    marginTop: SPACING.xl,
-    paddingHorizontal: SPACING.lg,
   },
   essenceButtonContainer: {
     position: 'absolute',
