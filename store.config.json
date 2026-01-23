@@ -1,0 +1,53 @@
+{
+  "configVersion": 0,
+  "apple": {
+    "info": {
+      "en-US": {
+        "title": "Recovery Pulse — Sovereign Performance",
+        "subtitle": "Elite Bio-Data & Recovery",
+        "description": "Your body speaks in data. Recovery Pulse translates.\n\nTransform your daily wellness check-in into precision insights that rival elite performance labs. Track sleep quality, fatigue levels, and soreness with surgical accuracy. Receive a personalized Recovery Score that tells you exactly when to push harder and when to rest.\n\nTHE SOVEREIGN ADVANTAGE:\n\n• Daily Recovery Score — A single, powerful metric synthesized from your biometrics\n• HRV-Ready Analytics — Precision tracking designed for the performance-obsessed\n• Bio-Data Vault — Your wellness data, encrypted and private\n• 7-Day Trend Analysis — Visualize your recovery trajectory with investment-grade charts\n• AI-Powered Insights — Actionable recommendations based on your unique patterns\n\nDESIGNED FOR THE ELITE:\n\nRecovery Pulse isn't for everyone. It's for founders who treat their body like their most valuable asset. For athletes who demand data, not guesswork. For biohackers who optimize every variable.\n\nTHE SOVEREIGN PROTOCOL:\n\nBegin with 7 days of complimentary access. Experience the full Sovereign tier — no limitations, no credit card required. Then decide if you're ready to unlock permanent access at $79.99/year.\n\nYour recovery is your competitive edge. Track it with precision.\n\nSUBSCRIPTION DETAILS:\n• Sovereign Annual: $79.99/year (includes 7-day free trial)\n• Elite Monthly: $12.99/month\n• Payment charged to Apple ID account at confirmation\n• Subscription auto-renews unless cancelled 24+ hours before period end\n• Manage subscriptions in Account Settings after purchase\n\nPrivacy Policy: https://github.com/akaminski23/recovery-pulse/blob/main/docs/PRIVACY_POLICY.md\nTerms of Use: https://github.com/akaminski23/recovery-pulse/blob/main/docs/TERMS_OF_USE.md",
+        "keywords": "biohacking, recovery, HRV, health, performance, longevity, elite, vault, wellness, sleep tracker, fatigue, soreness, bio data, fitness",
+        "promoText": "7-day complimentary Sovereign access. No credit card required.",
+        "whatsNew": "Initial release. Begin your Sovereign journey."
+      }
+    },
+    "categories": ["HEALTH_AND_FITNESS", "LIFESTYLE"],
+    "primaryCategory": "HEALTH_AND_FITNESS",
+    "copyright": "2026 Recovery Pulse",
+    "contentRights": "DOES_NOT_USE_THIRD_PARTY_CONTENT",
+    "ageRating": {
+      "alcoholTobaccoOrDrugUseOrReferences": "NONE",
+      "contests": "NONE",
+      "gamblingSimulated": "NONE",
+      "horrorOrFearThemes": "NONE",
+      "matureOrSuggestiveThemes": "NONE",
+      "medicalOrTreatmentInformation": "INFREQUENT_OR_MILD",
+      "profanityOrCrudeHumor": "NONE",
+      "sexualContentGraphicAndNudity": "NONE",
+      "sexualContentOrNudity": "NONE",
+      "violenceCartoonOrFantasy": "NONE",
+      "violenceRealistic": "NONE",
+      "violenceRealisticProlongedGraphicOrSadistic": "NONE"
+    },
+    "inAppPurchases": [
+      {
+        "productId": "com.recoverypulse.app.annual",
+        "referenceName": "Sovereign Annual",
+        "type": "AUTO_RENEWABLE_SUBSCRIPTION",
+        "subscriptionGroup": "Recovery Pulse Pro",
+        "displayName": "Sovereign Annual",
+        "description": "Full Sovereign access with 7-day free trial. $79.99/year.",
+        "price": 79.99
+      },
+      {
+        "productId": "com.recoverypulse.app.monthly",
+        "referenceName": "Elite Monthly",
+        "type": "AUTO_RENEWABLE_SUBSCRIPTION",
+        "subscriptionGroup": "Recovery Pulse Pro",
+        "displayName": "Elite Monthly",
+        "description": "Full access, billed monthly. $12.99/month.",
+        "price": 12.99
+      }
+    ]
+  }
+}
