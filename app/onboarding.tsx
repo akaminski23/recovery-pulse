@@ -323,24 +323,55 @@ export default function OnboardingScreen() {
       {/* ====== SCREEN 3: THE ESSENCE + INSTANT BIOMETRIC ====== */}
       {(currentStep === 'essence' || currentStep === 'dissolving') && (
         <Animated.View
-          style={[styles.screen, essenceAnimatedStyle, dissolveAnimatedStyle]}
+          style={[styles.screen, styles.essenceScreen, essenceAnimatedStyle, dissolveAnimatedStyle]}
           entering={FadeIn.duration(800)}
         >
           {/* Headline */}
-          <SafeText style={styles.essenceHeadline}>PRECISION</SafeText>
-          <SafeText style={styles.essenceHeadline}>RECOVERY</SafeText>
+          <SafeText style={styles.essenceHeadline}>HOW IT WORKS</SafeText>
 
-          {/* Body Statement */}
-          <SafeText style={styles.essenceBody}>
-            Optimize your peak performance through clinical-grade biomarker
-            tracking and AI-driven recovery protocols.
+          {/* Step-by-step guide */}
+          <View style={styles.stepsContainer}>
+            <View style={styles.stepRow}>
+              <SafeText style={styles.stepNumber}>1</SafeText>
+              <View style={styles.stepContent}>
+                <SafeText style={styles.stepTitle}>Daily Check-In</SafeText>
+                <SafeText style={styles.stepDescription}>
+                  Each morning, log your sleep hours, sleep quality, fatigue level, and muscle soreness using simple sliders.
+                </SafeText>
+              </View>
+            </View>
+
+            <View style={styles.stepRow}>
+              <SafeText style={styles.stepNumber}>2</SafeText>
+              <View style={styles.stepContent}>
+                <SafeText style={styles.stepTitle}>Recovery Score</SafeText>
+                <SafeText style={styles.stepDescription}>
+                  Your inputs are calculated into a 0-100 Recovery Score. Green (80+) = train hard. Red (below 40) = rest day.
+                </SafeText>
+              </View>
+            </View>
+
+            <View style={styles.stepRow}>
+              <SafeText style={styles.stepNumber}>3</SafeText>
+              <View style={styles.stepContent}>
+                <SafeText style={styles.stepTitle}>Track Trends</SafeText>
+                <SafeText style={styles.stepDescription}>
+                  View your 7-day history and weekly average to understand your recovery patterns over time.
+                </SafeText>
+              </View>
+            </View>
+          </View>
+
+          {/* Navigation hint */}
+          <SafeText style={styles.navHint}>
+            Pulse = Today's Score  •  Check-In = Log Data  •  Trends = History
           </SafeText>
 
           {/* CTA Button with 3D Glass border */}
           <Animated.View
             style={[
               styles.essenceButtonContainer,
-              { paddingBottom: insets.bottom + 108 },
+              { paddingBottom: insets.bottom + 40 },
               essenceButtonAnimatedStyle,
             ]}
           >
@@ -352,7 +383,7 @@ export default function OnboardingScreen() {
                   style={styles.essenceButtonText}
                   onPress={handleContinueToSecurity}
                 >
-                  CONTINUE TO SECURITY
+                  BEGIN TRACKING
                 </SafeText>
               </SapphireCard>
             </View>
@@ -427,23 +458,60 @@ const styles = StyleSheet.create({
   },
 
   // Screen 3: Essence
+  essenceScreen: {
+    justifyContent: 'flex-start',
+    paddingTop: 100,
+  },
   essenceHeadline: {
-    fontSize: 28,
-    lineHeight: 34,
+    fontSize: 24,
+    lineHeight: 30,
     fontWeight: '300',
-    letterSpacing: 4,
+    letterSpacing: 6,
     color: 'rgba(212, 175, 55, 0.9)',
     textTransform: 'uppercase',
     textAlign: 'center',
+    marginBottom: SPACING.xl,
   },
-  essenceBody: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: '200',
-    color: 'rgba(226, 232, 240, 0.6)',
+  stepsContainer: {
+    paddingHorizontal: SPACING.lg,
+    gap: SPACING.lg,
+  },
+  stepRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: SPACING.md,
+  },
+  stepNumber: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: 'rgba(212, 175, 55, 0.8)',
+    width: 28,
     textAlign: 'center',
-    paddingHorizontal: 40,
+  },
+  stepContent: {
+    flex: 1,
+    gap: 4,
+  },
+  stepTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: 'rgba(255, 255, 255, 0.9)',
+    letterSpacing: 0.5,
+  },
+  stepDescription: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '300',
+    color: 'rgba(226, 232, 240, 0.5)',
+  },
+  navHint: {
+    fontSize: 11,
+    fontWeight: '300',
+    color: 'rgba(212, 175, 55, 0.4)',
+    textAlign: 'center',
+    letterSpacing: 0.5,
     marginTop: SPACING.xl,
+    paddingHorizontal: SPACING.lg,
   },
   essenceButtonContainer: {
     position: 'absolute',
