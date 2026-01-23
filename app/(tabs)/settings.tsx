@@ -31,11 +31,15 @@ export default function SettingsScreen() {
   const { resetOnboarding } = useOnboarding();
   const { resetGracePeriod } = useGracePeriod();
 
-  // Hidden Laboratory - unlocked by tapping Version 5 times
+  // Laboratory visibility:
+  // - In __DEV__ mode: always visible for testing
+  // - In production: hidden behind 5x tap on Version
   const [labTapCount, setLabTapCount] = useState(0);
-  const [labUnlocked, setLabUnlocked] = useState(false);
+  const [labUnlocked, setLabUnlocked] = useState(__DEV__); // Auto-unlock in dev
 
   const handleVersionTap = useCallback(() => {
+    if (__DEV__) return; // Already unlocked in dev mode
+
     const newCount = labTapCount + 1;
     setLabTapCount(newCount);
 

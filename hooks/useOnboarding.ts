@@ -39,8 +39,8 @@ export function useOnboarding(): UseOnboardingReturn {
     try {
       await AsyncStorage.setItem(ONBOARDING_COMPLETE_KEY, 'true');
       setHasCompletedOnboarding(true);
-    } catch (error) {
-      console.error('Failed to save onboarding status:', error);
+    } catch {
+      // Silent fail
     }
   }, []);
 
@@ -48,8 +48,8 @@ export function useOnboarding(): UseOnboardingReturn {
     try {
       await AsyncStorage.removeItem(ONBOARDING_COMPLETE_KEY);
       setHasCompletedOnboarding(false);
-    } catch (error) {
-      console.error('Failed to reset onboarding status:', error);
+    } catch {
+      // Silent fail
     }
   }, []);
 
