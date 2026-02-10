@@ -14,9 +14,11 @@ import { GradientBackground } from '../../components/GradientBackground';
 import { AnimatedCard, AnimatedElement } from '../../components/AnimatedCard';
 import { SapphireButton } from '../../components/SapphireButton';
 import { SafeText, HeadlineText, CaptionText } from '../../components/SafeText';
+import { SovereignPaywall } from '../../components/SovereignPaywall';
 import { useHaptic } from '../../hooks/useHaptic';
 import { useOnboarding } from '../../hooks/useOnboarding';
 import { useGracePeriod } from '../../hooks/useGracePeriod';
+import { useAccess } from '../../hooks/useAccess';
 import { resetDatabase } from '../../db/client';
 import { useCheckIn } from '../../hooks/useCheckIn';
 import { PALETTE, SPACING } from '../../constants/theme';
@@ -30,12 +32,14 @@ export default function SettingsScreen() {
   const { refresh } = useCheckIn();
   const { resetOnboarding } = useOnboarding();
   const { resetGracePeriod } = useGracePeriod();
+  const { isPro, isTrialing, isInComplimentaryAccess, graceDaysLeft } = useAccess();
 
   // Laboratory visibility:
   // - In __DEV__ mode: always visible for testing
   // - In production: hidden behind 5x tap on Version
   const [labTapCount, setLabTapCount] = useState(0);
   const [labUnlocked, setLabUnlocked] = useState(__DEV__); // Auto-unlock in dev
+  const [showPaywall, setShowPaywall] = useState(false);
 
   const handleVersionTap = useCallback(() => {
     if (__DEV__) return; // Already unlocked in dev mode
@@ -101,6 +105,11 @@ export default function SettingsScreen() {
     router.replace('/onboarding');
   };
 
+  const handleShowPaywall = () => {
+    trigger('medium');
+    setShowPaywall(true);
+  };
+
   return (
     <View style={styles.container}>
       <GradientBackground />
@@ -153,14 +162,53 @@ export default function SettingsScreen() {
           </SafeText>
         </AnimatedCard>
 
-        {/* Recovery Score Info */}
+        {/* Subscription Section - Always visible for App Review */}
         <AnimatedElement index={3} delay={240}>
+          <CaptionText style={styles.sectionTitle}>Subscription</CaptionText>
+        </AnimatedElement>
+
+        <AnimatedCard index={4} delay={320}>
+          <View style={styles.subscriptionCard}>
+            <View style={styles.subscriptionIcon}>
+              <Ionicons
+                name="diamond"
+                size={28}
+                color={PALETTE.champagneGold}
+              />
+            </View>
+            <View style={styles.subscriptionInfo}>
+              <SafeText variant="headline">Recovery Pulse Pro</SafeText>
+              <SafeText variant="bodySmall" color={PALETTE.titaniumSilverMuted}>
+                {isPro
+                  ? 'Active Subscription'
+                  : isTrialing
+                  ? 'Free Trial Active'
+                  : isInComplimentaryAccess
+                  ? `Complimentary Access: ${graceDaysLeft} days left`
+                  : 'Unlock full access'}
+              </SafeText>
+            </View>
+          </View>
+          {!isPro && (
+            <View style={styles.upgradeButtonContainer}>
+              <SapphireButton
+                title="View Plans & Subscribe"
+                onPress={handleShowPaywall}
+                variant="primary"
+                fullWidth
+              />
+            </View>
+          )}
+        </AnimatedCard>
+
+        {/* Recovery Score Info */}
+        <AnimatedElement index={5} delay={400}>
           <CaptionText style={styles.sectionTitle}>
             Recovery Score Formula
           </CaptionText>
         </AnimatedElement>
 
-        <AnimatedCard index={4} delay={320}>
+        <AnimatedCard index={6} delay={480}>
           <View style={styles.formulaSection}>
             <FormulaItem
               label="Sleep Quality"
@@ -181,11 +229,11 @@ export default function SettingsScreen() {
         </AnimatedCard>
 
         {/* Score Ranges */}
-        <AnimatedElement index={5} delay={400}>
+        <AnimatedElement index={7} delay={560}>
           <CaptionText style={styles.sectionTitle}>Score Ranges</CaptionText>
         </AnimatedElement>
 
-        <AnimatedCard index={6} delay={480}>
+        <AnimatedCard index={8} delay={640}>
           <View style={styles.rangesSection}>
             <ScoreRange
               range="80-100"
@@ -217,13 +265,13 @@ export default function SettingsScreen() {
         {/* Hidden Laboratory - Developer Options */}
         {labUnlocked && (
           <>
-            <AnimatedElement index={7} delay={560}>
+            <AnimatedElement index={9} delay={720}>
               <CaptionText style={styles.sectionTitle}>
                 Laboratory
               </CaptionText>
             </AnimatedElement>
 
-            <AnimatedCard index={8} delay={640}>
+            <AnimatedCard index={10} delay={800}>
               <View style={styles.labHeader}>
                 <Ionicons
                   name="flask"
@@ -238,6 +286,12 @@ export default function SettingsScreen() {
                 <SapphireButton
                   title="Replay Onboarding"
                   onPress={handleReplayOnboarding}
+                  variant="ghost"
+                  fullWidth
+                />
+                <SapphireButton
+                  title="Show Paywall"
+                  onPress={handleShowPaywall}
                   variant="ghost"
                   fullWidth
                 />
@@ -258,6 +312,12 @@ export default function SettingsScreen() {
           </>
         )}
       </ScrollView>
+
+      {/* Paywall Modal */}
+      <SovereignPaywall
+        visible={showPaywall}
+        onClose={() => setShowPaywall(false)}
+      />
     </View>
   );
 }
@@ -395,6 +455,28 @@ const styles = StyleSheet.create({
   },
   buttonGroup: {
     gap: SPACING.md,
+  },
+  subscriptionCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.md,
+    marginBottom: SPACING.md,
+  },
+  subscriptionIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 12,
+    borderCurve: 'continuous',
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  subscriptionInfo: {
+    flex: 1,
+    gap: SPACING.xs,
+  },
+  upgradeButtonContainer: {
+    marginTop: SPACING.xs,
   },
   labHeader: {
     flexDirection: 'row',

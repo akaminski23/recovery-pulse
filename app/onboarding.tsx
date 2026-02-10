@@ -11,7 +11,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import { View, StyleSheet, Dimensions, ScrollView } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -323,64 +323,72 @@ export default function OnboardingScreen() {
       {/* ====== SCREEN 3: THE ESSENCE + INSTANT BIOMETRIC ====== */}
       {(currentStep === 'essence' || currentStep === 'dissolving') && (
         <Animated.View
-          style={[styles.screen, styles.essenceScreen, essenceAnimatedStyle, dissolveAnimatedStyle]}
+          style={[styles.screen, essenceAnimatedStyle, dissolveAnimatedStyle]}
           entering={FadeIn.duration(800)}
         >
-          {/* Welcome */}
-          <SafeText style={styles.welcomeTitle}>Welcome to Recovery Pulse</SafeText>
-
-          <SafeText style={styles.welcomeSubtitle}>
-            This app helps you track how well your body is recovering so you know when to train hard and when to rest.
-          </SafeText>
-
-          {/* What to do */}
-          <View style={styles.instructionBlock}>
-            <SafeText style={styles.instructionTitle}>Every Morning</SafeText>
-            <SafeText style={styles.instructionText}>
-              Open the app and tap "Check-In" at the bottom. Use the sliders to log how you slept and how your body feels. It takes 30 seconds.
-            </SafeText>
-          </View>
-
-          <View style={styles.instructionBlock}>
-            <SafeText style={styles.instructionTitle}>Your Recovery Score</SafeText>
-            <SafeText style={styles.instructionText}>
-              Based on your input, you get a score from 0 to 100.{'\n'}
-              • 80-100 (Green) = You're recovered. Train hard.{'\n'}
-              • 60-79 (Gold) = Moderate. Normal training.{'\n'}
-              • Below 60 (Red) = Take it easy. Rest day.
-            </SafeText>
-          </View>
-
-          <View style={styles.instructionBlock}>
-            <SafeText style={styles.instructionTitle}>The Bottom Tabs</SafeText>
-            <SafeText style={styles.instructionText}>
-              • Pulse — Your dashboard with today's score{'\n'}
-              • Check-In — Where you log your daily data{'\n'}
-              • Trends — See your scores over the past week
-            </SafeText>
-          </View>
-
-          {/* CTA Button */}
-          <Animated.View
-            style={[
-              styles.essenceButtonContainer,
-              { paddingBottom: insets.bottom + 40 },
-              essenceButtonAnimatedStyle,
+          <ScrollView
+            style={styles.essenceScroll}
+            contentContainerStyle={[
+              styles.essenceContent,
+              {
+                paddingTop: insets.top + 60,
+                paddingBottom: insets.bottom + 40,
+              },
             ]}
+            showsVerticalScrollIndicator={false}
           >
-            <View style={styles.essenceButtonWrapper}>
-              <SapphireCard padding="lg">
-                <SafeText
-                  variant="title"
-                  color={PALETTE.champagneGoldBright}
-                  style={styles.essenceButtonText}
-                  onPress={handleContinueToSecurity}
-                >
-                  GET STARTED
-                </SafeText>
-              </SapphireCard>
+            {/* Welcome */}
+            <SafeText style={styles.welcomeTitle}>Welcome to Recovery Pulse</SafeText>
+
+            <SafeText style={styles.welcomeSubtitle}>
+              This app helps you track how well your body is recovering so you know when to train hard and when to rest.
+            </SafeText>
+
+            {/* What to do */}
+            <View style={styles.instructionBlock}>
+              <SafeText style={styles.instructionTitle}>Every Morning</SafeText>
+              <SafeText style={styles.instructionText}>
+                Open the app and tap "Check-In" at the bottom. Use the sliders to log how you slept and how your body feels. It takes 30 seconds.
+              </SafeText>
             </View>
-          </Animated.View>
+
+            <View style={styles.instructionBlock}>
+              <SafeText style={styles.instructionTitle}>Your Recovery Score</SafeText>
+              <SafeText style={styles.instructionText}>
+                Based on your input, you get a score from 0 to 100.{'\n'}
+                • 80-100 (Green) = You're recovered. Train hard.{'\n'}
+                • 60-79 (Gold) = Moderate. Normal training.{'\n'}
+                • Below 60 (Red) = Take it easy. Rest day.
+              </SafeText>
+            </View>
+
+            <View style={styles.instructionBlock}>
+              <SafeText style={styles.instructionTitle}>The Bottom Tabs</SafeText>
+              <SafeText style={styles.instructionText}>
+                • Pulse — Your dashboard with today's score{'\n'}
+                • Check-In — Where you log your daily data{'\n'}
+                • Trends — See your scores over the past week
+              </SafeText>
+            </View>
+
+            {/* CTA Button - in content flow, not absolute */}
+            <Animated.View
+              style={[styles.essenceButtonContainer, essenceButtonAnimatedStyle]}
+            >
+              <View style={styles.essenceButtonWrapper}>
+                <SapphireCard padding="lg">
+                  <SafeText
+                    variant="title"
+                    color={PALETTE.champagneGoldBright}
+                    style={styles.essenceButtonText}
+                    onPress={handleContinueToSecurity}
+                  >
+                    GET STARTED
+                  </SafeText>
+                </SapphireCard>
+              </View>
+            </Animated.View>
+          </ScrollView>
         </Animated.View>
       )}
     </View>
@@ -450,11 +458,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  // Screen 3: Essence - Simple readable layout
-  essenceScreen: {
-    justifyContent: 'flex-start',
-    paddingTop: 80,
+  // Screen 3: Essence - Scrollable layout for iPad compatibility
+  essenceScroll: {
+    flex: 1,
+  },
+  essenceContent: {
     paddingHorizontal: 24,
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: 500,
   },
   welcomeTitle: {
     fontSize: 22,
@@ -487,10 +499,7 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.85)',
   },
   essenceButtonContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: SPACING.lg,
-    right: SPACING.lg,
+    marginTop: 32,
   },
   essenceButtonWrapper: {
     // 3D Glass effect - 0.5px white top border
