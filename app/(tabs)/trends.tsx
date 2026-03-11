@@ -432,6 +432,10 @@ const RecoveryChart: React.FC<ChartProps> = ({ data, range }) => {
     : (monthData ?? { points: [], xLabels: [] });
 
   // ── Dynamic color gradient with intermediate zone transitions ──
+  // Gradient x1/x2 span only the data range (userSpaceOnUse)
+  const gradientX1 = points.length >= 2 ? points[0].x : paddingLeft;
+  const gradientX2 = points.length >= 2 ? points[points.length - 1].x : paddingLeft + graphWidth;
+
   const gradientStops = useMemo(() => {
     if (points.length === 0) {
       const c = 'rgba(80, 200, 120, 0.9)';
@@ -442,18 +446,22 @@ const RecoveryChart: React.FC<ChartProps> = ({ data, range }) => {
       return [{ offset: 0, color: c }, { offset: 1, color: c }];
     }
 
+    const firstX = points[0].x;
+    const lastX = points[points.length - 1].x;
+    const dataWidth = lastX - firstX;
+
     const stops: Array<{ offset: number; color: string }> = [];
-    const yellowColor = getRecoveryStatus(65).color;
-    // Zone boundaries: add yellow stops at green/yellow (80) and yellow/red (50)
+    // Zone boundaries match getRecoveryStatus thresholds: 80, 60, 40
     const zoneThresholds = [
-      { boundary: 80, color: yellowColor },
-      { boundary: 50, color: yellowColor },
+      { boundary: 80, color: getRecoveryStatus(79).color },  // gold
+      { boundary: 60, color: getRecoveryStatus(59).color },  // orange
+      { boundary: 40, color: getRecoveryStatus(39).color },  // red
     ];
 
     for (let i = 0; i < points.length; i++) {
       const p = points[i];
-      const offset = graphWidth > 0
-        ? Math.max(0, Math.min(1, (p.x - paddingLeft) / graphWidth))
+      const offset = dataWidth > 0
+        ? Math.max(0, Math.min(1, (p.x - firstX) / dataWidth))
         : 0;
       stops.push({ offset, color: getRecoveryStatus(p.score).color });
 
@@ -471,8 +479,8 @@ const RecoveryChart: React.FC<ChartProps> = ({ data, range }) => {
           if (boundary > minScore && boundary < maxScore) {
             const t = Math.abs(scoreA - boundary) / Math.abs(scoreA - scoreB);
             const bx = xA + t * (xB - xA);
-            const bOffset = graphWidth > 0
-              ? Math.max(0, Math.min(1, (bx - paddingLeft) / graphWidth))
+            const bOffset = dataWidth > 0
+              ? Math.max(0, Math.min(1, (bx - firstX) / dataWidth))
               : 0;
             stops.push({ offset: bOffset, color });
           }
@@ -482,7 +490,7 @@ const RecoveryChart: React.FC<ChartProps> = ({ data, range }) => {
 
     stops.sort((a, b) => a.offset - b.offset);
     return stops;
-  }, [points, graphWidth]);
+  }, [points]);
 
   // ── Bezier path generation ──
   const generatePath = () => {
@@ -530,7 +538,7 @@ const RecoveryChart: React.FC<ChartProps> = ({ data, range }) => {
     <Svg width={chartWidth} height={chartHeight}>
       <Defs>
         {/* Dynamic gradient — transitions between score colors */}
-        <LinearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <LinearGradient id="scoreGradient" x1={gradientX1} y1={0} x2={gradientX2} y2={0} gradientUnits="userSpaceOnUse">
           {gradientStops.map((stop, i) => (
             <Stop
               key={i}
