@@ -15,7 +15,6 @@ import { HowItWorksStep } from '../components/onboarding/HowItWorksStep';
 import { YourScoreStep } from '../components/onboarding/YourScoreStep';
 import { WowMomentStep } from '../components/onboarding/WowMomentStep';
 import { PaywallStep } from '../components/onboarding/PaywallStep';
-
 const ONBOARDING_COMPLETE_KEY = '@recovery_pulse_onboarded';
 
 type Step = 'welcome' | 'howItWorks' | 'yourScore' | 'wowMoment' | 'paywall';
@@ -32,17 +31,17 @@ export default function OnboardingScreen() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState<Step>('welcome');
 
+  const completeOnboarding = useCallback(async () => {
+    await AsyncStorage.setItem(ONBOARDING_COMPLETE_KEY, 'true');
+    router.replace('/');
+  }, [router]);
+
   const goToNext = useCallback(() => {
     const currentIndex = STEP_ORDER.indexOf(currentStep);
     if (currentIndex < STEP_ORDER.length - 1) {
       setCurrentStep(STEP_ORDER[currentIndex + 1]);
     }
   }, [currentStep]);
-
-  const completeOnboarding = useCallback(async () => {
-    await AsyncStorage.setItem(ONBOARDING_COMPLETE_KEY, 'true');
-    router.replace('/');
-  }, [router]);
 
   const renderStep = () => {
     switch (currentStep) {

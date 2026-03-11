@@ -59,10 +59,11 @@ export const PaywallStep: React.FC<PaywallStepProps> = ({ onComplete }) => {
 
   const [selectedPlan, setSelectedPlan] = useState<PlanType>('annual');
 
-  // Auto-skip if user is already Pro (e.g. restored or already subscribed)
+  // Auto-skip if user is already Pro — only in production (dev needs to test paywall)
   React.useEffect(() => {
-    if (isPro && !isLoading) {
-      onComplete();
+    if (isPro && !isLoading && !__DEV__) {
+      const timer = setTimeout(() => onComplete(), 600);
+      return () => clearTimeout(timer);
     }
   }, [isPro, isLoading, onComplete]);
 
