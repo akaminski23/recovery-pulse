@@ -49,6 +49,7 @@ export const PaywallStep: React.FC<PaywallStepProps> = ({ onComplete }) => {
   const insets = useSafeAreaInsets();
   const {
     isLoading,
+    isPro,
     annualPrice,
     monthlyPrice,
     subscribeAnnual,
@@ -57,6 +58,13 @@ export const PaywallStep: React.FC<PaywallStepProps> = ({ onComplete }) => {
   } = useSubscription();
 
   const [selectedPlan, setSelectedPlan] = useState<PlanType>('annual');
+
+  // Auto-skip if user is already Pro (e.g. restored or already subscribed)
+  React.useEffect(() => {
+    if (isPro && !isLoading) {
+      onComplete();
+    }
+  }, [isPro, isLoading, onComplete]);
 
   const handleSelectPlan = (plan: PlanType) => {
     Haptics.selectionAsync();
@@ -455,7 +463,12 @@ const styles = StyleSheet.create({
     color: 'rgba(80, 200, 120, 0.9)',
     marginTop: 4,
   },
-  // planNoTrial removed — both plans now show 7-day free trial
+  planNoTrial: {
+    fontSize: 12,
+    fontWeight: '400',
+    color: PALETTE.subtleWhite,
+    marginTop: 4,
+  },
   ctaSection: {
     width: '100%',
     maxWidth: 320,

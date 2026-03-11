@@ -8,8 +8,8 @@
 import { Platform } from 'react-native';
 
 // RevenueCat Configuration - Recovery Pulse
-const REVENUECAT_API_KEY_IOS = 'appl_MokZwHaWkLjbWWNsLJSygyaDFiW';
-const ENTITLEMENT_ID = 'Pro';
+const REVENUECAT_API_KEY_IOS = 'appl_THHrREEATFDsxxAqATZRasuPwsS';
+const ENTITLEMENT_ID = 'Recovery Pulse Pro';
 
 // Product identifiers (must match App Store Connect)
 export const PRODUCT_IDS = {
@@ -27,6 +27,21 @@ try {
 } catch {
   // Native module not available - using mock in Expo Go
 }
+
+// Shared Pro state — all useSubscription hooks read from this
+let _isProGlobal = false;
+type ProListener = (isPro: boolean) => void;
+const _listeners = new Set<ProListener>();
+
+export const setProStatus = (isPro: boolean) => {
+  _isProGlobal = isPro;
+  _listeners.forEach((fn) => fn(isPro));
+};
+export const getProStatus = () => _isProGlobal;
+export const onProStatusChange = (fn: ProListener) => {
+  _listeners.add(fn);
+  return () => { _listeners.delete(fn); };
+};
 
 // Type definitions for when native module isn't available
 export interface CustomerInfo {
@@ -91,7 +106,9 @@ export const getCustomerInfo = async (): Promise<CustomerInfo | null> => {
     return MOCK_CUSTOMER_INFO;
   }
   try {
-    return await Purchases.getCustomerInfo();
+    const info = await Purchases.getCustomerInfo();
+    console.log('[Purchases] CustomerInfo entitlements:', JSON.stringify(Object.keys(info.entitlements.active)));
+    return info;
   } catch (error) {
     console.error('[Purchases] Failed to get customer info:', error);
     return null;
@@ -213,9 +230,28 @@ export const purchasePackage = async (
   }
   try {
     const { customerInfo } = await Purchases.purchasePackage(pkg);
-    return { success: checkProEntitlement(customerInfo), customerInfo };
+    console.log('[Purchases] Purchase success. Active entitlements:', JSON.stringify(Object.keys(customerInfo.entitlements.active)));
+    const isPro = checkProEntitlement(customerInfo);
+    console.log('[Purchases] isPro:', isPro, '| Looking for entitlement:', ENTITLEMENT_ID);
+    if (isPro) setProStatus(true);
+    return { success: isPro, customerInfo };
   } catch (error: any) {
-    // User cancelled
+    console.log('[Purchases] Purchase threw error, re-checking entitlement...');
+    // Always re-check entitlement — purchase may have succeeded despite error
+    // (sandbox race condition, "already subscribed" dialog, etc.)
+    try {
+      const freshInfo = await Purchases.getCustomerInfo();
+      console.log('[Purchases] Re-check entitlements:', JSON.stringify(Object.keys(freshInfo.entitlements.active)));
+      if (checkProEntitlement(freshInfo)) {
+        console.log('[Purchases] Re-check: user IS Pro! Closing paywall.');
+        setProStatus(true);
+        return { success: true, customerInfo: freshInfo };
+      }
+      console.log('[Purchases] Re-check: user is NOT Pro.');
+    } catch {
+      // ignore re-check failure
+    }
+    // User cancelled (and not subscribed)
     if (error.userCancelled) {
       return { success: false, customerInfo: null };
     }

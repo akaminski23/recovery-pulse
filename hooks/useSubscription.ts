@@ -14,6 +14,8 @@ import {
   restorePurchases,
   formatPrice,
   PurchasesPackage,
+  getProStatus,
+  onProStatusChange,
 } from '../services/purchases';
 
 interface SubscriptionState {
@@ -183,6 +185,18 @@ export const useSubscription = (): UseSubscriptionReturn => {
   useEffect(() => {
     refresh();
   }, [refresh]);
+
+  // Listen for global Pro status changes (from other hook instances)
+  useEffect(() => {
+    if (getProStatus() && !state.isPro) {
+      setState((prev) => ({ ...prev, isPro: true }));
+    }
+    return onProStatusChange((isPro) => {
+      if (isPro) {
+        setState((prev) => ({ ...prev, isPro: true, isLoading: false }));
+      }
+    });
+  }, [state.isPro]);
 
   return {
     ...state,

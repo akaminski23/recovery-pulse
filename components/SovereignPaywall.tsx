@@ -3,7 +3,7 @@
  * Dual Pricing UI with Legal Compliance
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -48,6 +48,7 @@ export const SovereignPaywall: React.FC<SovereignPaywallProps> = ({
   const insets = useSafeAreaInsets();
   const {
     isLoading,
+    isPro,
     annualPrice,
     monthlyPrice,
     subscribeAnnual,
@@ -57,6 +58,13 @@ export const SovereignPaywall: React.FC<SovereignPaywallProps> = ({
   } = useSubscription();
 
   const [selectedPlan, setSelectedPlan] = useState<PlanType>('annual');
+
+  // Auto-close if user is already Pro
+  useEffect(() => {
+    if (isPro && !isLoading && visible) {
+      onClose();
+    }
+  }, [isPro, isLoading, visible, onClose]);
 
   const handleSelectPlan = (plan: PlanType) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -209,8 +217,8 @@ export const SovereignPaywall: React.FC<SovereignPaywallProps> = ({
                   /month
                 </SafeText>
               </HeadlineText>
-              <SafeText variant="bodySmall" color={PALETTE.titaniumSilverMuted}>
-                No commitment
+              <SafeText variant="bodySmall" color={PALETTE.success}>
+                7-Day Free Trial
               </SafeText>
               {selectedPlan === 'monthly' && (
                 <View style={styles.checkmark}>
