@@ -5,7 +5,7 @@
  */
 
 import React, { useMemo, useState } from 'react';
-import { View, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
+import { View, StyleSheet, ScrollView, Pressable, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { format, parseISO, subDays, startOfDay } from 'date-fns';
@@ -13,7 +13,6 @@ import { Ionicons } from '@expo/vector-icons';
 import Svg, {
   Path,
   Line,
-  Rect,
   Text as SvgText,
   Defs,
   LinearGradient,
@@ -22,6 +21,7 @@ import Svg, {
   G,
 } from 'react-native-svg';
 import Animated, { FadeInUp } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 
 import { GradientBackground } from '../../components/GradientBackground';
 import { AnimatedCard, AnimatedElement } from '../../components/AnimatedCard';
@@ -48,6 +48,7 @@ export default function TrendsScreen() {
   const { recentCheckIns, averageScore } = useCheckIn();
   const { isLocked } = useAccess();
   const [showPaywall, setShowPaywall] = useState(false);
+  const [chartRange, setChartRange] = useState<'7d' | '30d'>('7d');
 
   // Sort by date ascending for chart
   const sortedCheckIns = [...recentCheckIns].sort((a, b) =>
@@ -81,7 +82,7 @@ export default function TrendsScreen() {
         {/* Header */}
         <AnimatedElement index={0} delay={0}>
           <View style={styles.header}>
-            <CaptionText>Last 7 Days</CaptionText>
+            <CaptionText>{chartRange === '7d' ? 'Last 7 Days' : 'Last 30 Days'}</CaptionText>
             <HeadlineText>Recovery Trends</HeadlineText>
           </View>
         </AnimatedElement>
@@ -115,9 +116,57 @@ export default function TrendsScreen() {
         {sortedCheckIns.length > 0 ? (
           <>
             <AnimatedCard index={2} delay={160}>
-              <CaptionText style={styles.chartTitle}>Score History</CaptionText>
+              <View style={styles.chartHeader}>
+                <CaptionText style={styles.chartTitle}>Score History</CaptionText>
+                <View style={styles.rangeToggle}>
+                  <Pressable
+                    style={[
+                      styles.rangeOption,
+                      chartRange === '7d' && styles.rangeOptionActive,
+                    ]}
+                    onPress={() => {
+                      Haptics.selectionAsync();
+                      setChartRange('7d');
+                    }}
+                    hitSlop={4}
+                  >
+                    <SafeText
+                      variant="bodySmall"
+                      numberOfLines={1}
+                      style={[
+                        styles.rangeText,
+                        chartRange === '7d' && styles.rangeTextActive,
+                      ]}
+                    >
+                      7 Days
+                    </SafeText>
+                  </Pressable>
+                  <Pressable
+                    style={[
+                      styles.rangeOption,
+                      chartRange === '30d' && styles.rangeOptionActive,
+                    ]}
+                    onPress={() => {
+                      Haptics.selectionAsync();
+                      setChartRange('30d');
+                    }}
+                    hitSlop={4}
+                  >
+                    <SafeText
+                      variant="bodySmall"
+                      numberOfLines={1}
+                      style={[
+                        styles.rangeText,
+                        chartRange === '30d' && styles.rangeTextActive,
+                      ]}
+                    >
+                      30 Days
+                    </SafeText>
+                  </Pressable>
+                </View>
+              </View>
               <View style={styles.chartContainer}>
-                <RecoveryChart data={sortedCheckIns} />
+                <RecoveryChart data={sortedCheckIns} range={chartRange} />
               </View>
             </AnimatedCard>
 
@@ -211,17 +260,15 @@ export default function TrendsScreen() {
   );
 }
 
-/**
- * DAY LABELS - Investment Terminal Style
- */
-const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'] as const;
-
 interface ChartProps {
   data: Array<{
     date: string;
     recoveryScore: number;
   }>;
+  range: '7d' | '30d';
 }
+
+const DAY_LETTERS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'] as const; // getDay(): 0=Sun
 
 /**
  * Bezier curve control point calculation for smooth lines
@@ -247,77 +294,170 @@ const getControlPoints = (
 };
 
 /**
- * Recovery Chart - Precision Line Chart
- * Bezier curves, gradient stroke, atmospheric fill
+ * Recovery Chart - Dual Mode Precision Line Chart
+ * 7d: Day-of-week slots (M-S) | 30d: Date-proportional positioning
  */
-const RecoveryChart: React.FC<ChartProps> = ({ data }) => {
+const RecoveryChart: React.FC<ChartProps> = ({ data, range }) => {
   const { width: screenWidth } = useWindowDimensions();
   const chartWidth = Math.min(screenWidth - 48, 360);
   const chartHeight = 180;
-  // Generous padding to prevent glow clipping
   const paddingLeft = 28;
   const paddingRight = 28;
-  const paddingTop = 28; // Room for tooltip above node
-  const paddingBottom = 20; // Reduced - labels closer to chart
+  const paddingTop = 28;
+  const paddingBottom = 22;
   const graphWidth = chartWidth - paddingLeft - paddingRight;
   const graphHeight = chartHeight - paddingTop - paddingBottom;
   const maxScore = 100;
 
-  // Map data to last 7 days (fill gaps with null)
-  const chartData = useMemo(() => {
-    const today = startOfDay(new Date());
-    const result: Array<{ dayIndex: number; score: number | null; date: string }> = [];
-
-    for (let i = 6; i >= 0; i--) {
-      const targetDate = subDays(today, i);
-      const dateStr = format(targetDate, 'yyyy-MM-dd');
-      const dayOfWeek = targetDate.getDay();
-      // Convert Sunday (0) to 6, Monday (1) to 0, etc.
-      const dayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-
-      const checkIn = data.find((d) => d.date === dateStr);
-      result.push({
-        dayIndex,
-        score: checkIn ? checkIn.recoveryScore : null,
-        date: dateStr,
-      });
-    }
-
-    return result;
-  }, [data]);
-
-  // Points with actual data
-  const dataPoints = chartData
-    .map((d, i) => ({ ...d, index: i }))
-    .filter((d) => d.score !== null) as Array<{
-    index: number;
-    score: number;
-    date: string;
-  }>;
-
-  // Calculate pixel positions
-  const getX = (index: number) =>
-    paddingLeft + (index / 6) * graphWidth;
   const getY = (score: number) =>
     paddingTop + graphHeight - (score / maxScore) * graphHeight;
 
-  // Generate smooth Bezier path
-  const generatePath = () => {
-    if (dataPoints.length === 0) return '';
-    if (dataPoints.length === 1) return ''; // Single point handled separately
+  // ── 7-DAY MODE: Fixed day-of-week slots ──
+  const weekData = useMemo(() => {
+    if (range !== '7d') return null;
 
-    const points = dataPoints.map((d) => ({
-      x: getX(d.index),
-      y: getY(d.score),
+    const today = startOfDay(new Date());
+    const todayDow = today.getDay(); // 0=Sun, 1=Mon...
+    // Find this week's Monday
+    const monday = subDays(today, todayDow === 0 ? 6 : todayDow - 1);
+
+    const slots: Array<{ score: number | null; date: string; isToday: boolean; isFuture: boolean }> = [];
+
+    for (let i = 0; i < 7; i++) {
+      const targetDate = new Date(monday.getTime() + i * 86400000);
+      const dateStr = format(targetDate, 'yyyy-MM-dd');
+      const checkIn = data.find((d) => d.date === dateStr);
+      slots.push({
+        score: checkIn ? checkIn.recoveryScore : null,
+        date: dateStr,
+        isToday: dateStr === format(today, 'yyyy-MM-dd'),
+        isFuture: targetDate > today,
+      });
+    }
+
+    const getX = (index: number) => paddingLeft + (index / 6) * graphWidth;
+    const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+
+    const pts = slots
+      .map((d, i) => ({ ...d, index: i }))
+      .filter((d): d is typeof d & { score: number } => d.score !== null)
+      .map((d) => ({
+        date: d.date,
+        score: d.score,
+        x: getX(d.index),
+        y: getY(d.score),
+      }));
+
+    const labels = dayLabels.map((label, index) => ({
+      x: getX(index),
+      text: label,
+      bright: slots[index]?.isToday
+        ? true
+        : slots[index]?.score !== null,
+      isToday: slots[index]?.isToday ?? false,
+      isFuture: slots[index]?.isFuture ?? false,
     }));
+
+    return { points: pts, xLabels: labels };
+  }, [data, range, graphWidth, graphHeight]);
+
+  // ── 30-DAY MODE: Date-proportional positioning ──
+  const monthData = useMemo(() => {
+    if (range !== '30d') return null;
+
+    const today = startOfDay(new Date());
+    const cutoff = subDays(today, 30);
+
+    const filtered = data
+      .filter((d) => parseISO(d.date) >= cutoff)
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    if (filtered.length === 0) {
+      return { points: [] as Array<{ date: string; score: number; x: number; y: number }>, xLabels: [] as Array<{ x: number; text: string; bright: boolean }> };
+    }
+
+    if (filtered.length === 1) {
+      const d = filtered[0];
+      const cx = paddingLeft + graphWidth / 2;
+      return {
+        points: [{ date: d.date, score: d.recoveryScore, x: cx, y: getY(d.recoveryScore) }],
+        xLabels: [{ x: cx, text: format(parseISO(d.date), 'MMM d'), bright: true }],
+      };
+    }
+
+    const earliest = startOfDay(parseISO(filtered[0].date));
+    const latest = startOfDay(parseISO(filtered[filtered.length - 1].date));
+    const rangeDays = Math.max((latest.getTime() - earliest.getTime()) / 86400000, 1);
+
+    const dateToX = (dateStr: string) => {
+      const d = startOfDay(parseISO(dateStr));
+      const offset = (d.getTime() - earliest.getTime()) / 86400000;
+      return paddingLeft + (offset / rangeDays) * graphWidth;
+    };
+
+    const pts = filtered.map((d) => ({
+      date: d.date,
+      score: d.recoveryScore,
+      x: dateToX(d.date),
+      y: getY(d.recoveryScore),
+    }));
+
+    let labels: Array<{ x: number; text: string; bright: boolean }>;
+
+    if (filtered.length <= 7) {
+      labels = filtered.map((d) => ({
+        x: dateToX(d.date),
+        text: format(parseISO(d.date), 'MMM d'),
+        bright: true,
+      }));
+    } else {
+      const count = 5;
+      labels = Array.from({ length: count }, (_, i) => {
+        const offsetDays = (rangeDays * i) / (count - 1);
+        const date = new Date(earliest.getTime() + offsetDays * 86400000);
+        return {
+          x: paddingLeft + (i / (count - 1)) * graphWidth,
+          text: format(date, 'MMM d'),
+          bright: false,
+        };
+      });
+    }
+
+    return { points: pts, xLabels: labels };
+  }, [data, range, graphWidth, graphHeight]);
+
+  // ── Select active dataset ──
+  const { points, xLabels } = range === '7d'
+    ? (weekData ?? { points: [], xLabels: [] })
+    : (monthData ?? { points: [], xLabels: [] });
+
+  // ── Dynamic color gradient based on scores ──
+  const gradientStops = useMemo(() => {
+    if (points.length === 0) {
+      const c = 'rgba(80, 200, 120, 0.9)';
+      return [{ offset: 0, color: c }, { offset: 1, color: c }];
+    }
+    if (points.length === 1) {
+      const c = getRecoveryStatus(points[0].score).color;
+      return [{ offset: 0, color: c }, { offset: 1, color: c }];
+    }
+    return points.map((p) => ({
+      offset: graphWidth > 0
+        ? Math.max(0, Math.min(1, (p.x - paddingLeft) / graphWidth))
+        : 0,
+      color: getRecoveryStatus(p.score).color,
+    }));
+  }, [points, graphWidth]);
+
+  // ── Bezier path generation ──
+  const generatePath = () => {
+    if (points.length < 2) return '';
 
     let path = `M ${points[0].x} ${points[0].y}`;
 
     if (points.length === 2) {
-      // Simple line for 2 points
       path += ` L ${points[1].x} ${points[1].y}`;
     } else {
-      // Bezier curves for 3+ points
       for (let i = 0; i < points.length - 1; i++) {
         const p0 = points[Math.max(0, i - 1)];
         const p1 = points[i];
@@ -334,79 +474,70 @@ const RecoveryChart: React.FC<ChartProps> = ({ data }) => {
     return path;
   };
 
-  // Generate fill path (close to bottom)
   const generateFillPath = () => {
     const linePath = generatePath();
     if (!linePath) return '';
 
-    const lastPoint = dataPoints[dataPoints.length - 1];
-    const firstPoint = dataPoints[0];
+    const last = points[points.length - 1];
+    const first = points[0];
+    const bottom = paddingTop + graphHeight;
 
-    return `${linePath} L ${getX(lastPoint.index)} ${paddingTop + graphHeight} L ${getX(firstPoint.index)} ${paddingTop + graphHeight} Z`;
+    return `${linePath} L ${last.x} ${bottom} L ${first.x} ${bottom} Z`;
   };
 
   const linePath = generatePath();
   const fillPath = generateFillPath();
+  const showAnchors = points.length <= 5;
+  const showTooltips = points.length <= 12;
+  const compact = points.length > 15;
 
   return (
     <Svg width={chartWidth} height={chartHeight}>
       <Defs>
-        {/* Line Gradient: Emerald → Champagne Gold */}
-        <LinearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <Stop offset="0%" stopColor="rgba(80, 200, 120, 0.9)" />
-          <Stop offset="50%" stopColor="rgba(212, 175, 55, 0.85)" />
-          <Stop offset="100%" stopColor="rgba(80, 200, 120, 0.9)" />
+        {/* Dynamic gradient — transitions between score colors */}
+        <LinearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          {gradientStops.map((stop, i) => (
+            <Stop
+              key={i}
+              offset={`${stop.offset * 100}%`}
+              stopColor={stop.color}
+            />
+          ))}
         </LinearGradient>
-
-        {/* Atmospheric Fill Gradient */}
-        <LinearGradient id="fillGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-          <Stop offset="0%" stopColor="rgba(80, 200, 120, 0.12)" />
-          <Stop offset="100%" stopColor="rgba(80, 200, 120, 0)" />
-        </LinearGradient>
-
       </Defs>
 
-      {/* Surgical precision grid lines - barely visible */}
-      {[0, 25, 50, 75, 100].map((value) => {
-        const y = getY(value);
-        return (
-          <Line
-            key={value}
-            x1={paddingLeft}
-            y1={y}
-            x2={chartWidth - paddingRight}
-            y2={y}
-            stroke="rgba(255, 255, 255, 0.03)"
-            strokeWidth={0.5}
-          />
-        );
-      })}
+      {/* Precision grid lines */}
+      {[0, 25, 50, 75, 100].map((value) => (
+        <Line
+          key={value}
+          x1={paddingLeft}
+          y1={getY(value)}
+          x2={chartWidth - paddingRight}
+          y2={getY(value)}
+          stroke="rgba(255, 255, 255, 0.03)"
+          strokeWidth={0.5}
+        />
+      ))}
 
-      {/* Atmospheric fill under line */}
-      {fillPath && (
-        <Path d={fillPath} fill="url(#fillGradient)" />
-      )}
+      {/* Atmospheric fill — score colors at low opacity */}
+      {fillPath && <Path d={fillPath} fill="url(#scoreGradient)" opacity={0.15} />}
 
-      {/* Bezier curve line */}
+      {/* Bezier curve line — dynamic score colors */}
       {linePath && (
         <Path
           d={linePath}
-          stroke="url(#lineGradient)"
+          stroke="url(#scoreGradient)"
           strokeWidth={2}
+          strokeOpacity={0.9}
           fill="none"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
       )}
 
-      {/* Data point nodes - LUMINOUS NODE PROTOCOL */}
-      {dataPoints.map((point) => {
-        const x = getX(point.index);
-        const y = getY(point.score);
+      {/* Data point nodes */}
+      {points.map((point) => {
         const { color } = getRecoveryStatus(point.score);
-        const showAnchor = dataPoints.length <= 3; // Show for sparse data
-
-        // Extract RGB from color for glow layers
         const colorMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
         const r = colorMatch ? colorMatch[1] : '80';
         const g = colorMatch ? colorMatch[2] : '200';
@@ -414,72 +545,73 @@ const RecoveryChart: React.FC<ChartProps> = ({ data }) => {
 
         return (
           <G key={point.date}>
-            {/* PRECISION ANCHORING - Blueprint-style vertical drop line */}
-            {showAnchor && (
+            {showAnchors && (
               <Line
-                x1={x}
-                y1={y + 26}
-                x2={x}
-                y2={chartHeight - 6}
-                stroke="rgba(74, 222, 128, 0.2)"
+                x1={point.x}
+                y1={point.y + 20}
+                x2={point.x}
+                y2={paddingTop + graphHeight}
+                stroke={`rgba(${r}, ${g}, ${b}, 0.15)`}
                 strokeWidth={1}
                 strokeDasharray="4,4"
               />
             )}
 
-            {/* LAYER 3: Atmospheric mist (24px, 0.05 opacity) */}
+            {/* Soft halo */}
             <Circle
-              cx={x}
-              cy={y}
-              r={24}
-              fill={`rgba(${r}, ${g}, ${b}, 0.05)`}
+              cx={point.x}
+              cy={point.y}
+              r={compact ? 7 : 10}
+              fill={`rgba(${r}, ${g}, ${b}, 0.12)`}
             />
 
-            {/* LAYER 2: Soft halo (12px, 0.15 opacity) */}
-            <Circle
-              cx={x}
-              cy={y}
-              r={12}
-              fill={`rgba(${r}, ${g}, ${b}, 0.15)`}
-            />
-
-            {/* LAYER 1: Solid core (4px) */}
-            <Circle cx={x} cy={y} r={4} fill={color} />
+            {/* Solid core */}
+            <Circle cx={point.x} cy={point.y} r={compact ? 3 : 4} fill={color} />
 
             {/* Center highlight */}
-            <Circle cx={x} cy={y} r={1.5} fill="rgba(255, 255, 255, 0.8)" />
+            <Circle cx={point.x} cy={point.y} r={1.5} fill="rgba(255, 255, 255, 0.8)" />
 
-            {/* TYPOGRAPHIC CONTEXT - Floating score tooltip */}
-            <SvgText
-              x={x}
-              y={y - 16}
-              fontSize={10}
-              fontWeight="200"
-              fill={color}
-              textAnchor="middle"
-            >
-              {point.score}
-            </SvgText>
+            {/* Score tooltip */}
+            {showTooltips && (
+              <SvgText
+                x={point.x}
+                y={point.y - 16}
+                fontSize={10}
+                fontWeight="200"
+                fill={color}
+                textAnchor="middle"
+              >
+                {point.score}
+              </SvgText>
+            )}
           </G>
         );
       })}
 
-      {/* X-axis labels - All 7 days */}
-      {DAY_LABELS.map((label, index) => {
-        const x = getX(index);
-        const hasData = chartData[index]?.score !== null;
+      {/* X-axis labels */}
+      {xLabels.map((label, index) => {
+        const isToday = 'isToday' in label && label.isToday;
+        const isFuture = 'isFuture' in label && label.isFuture;
 
         return (
           <SvgText
-            key={`day-${index}`}
-            x={x}
-            y={chartHeight - 8}
-            fontSize={11}
-            fontWeight="200"
-            fill={hasData ? 'rgba(255, 255, 255, 0.6)' : 'rgba(255, 255, 255, 0.25)'}
+            key={`label-${index}`}
+            x={label.x}
+            y={chartHeight - 6}
+            fontSize={range === '7d' ? 11 : 10}
+            fontWeight={isToday ? '500' : '200'}
+            fill={
+              isToday
+                ? PALETTE.champagneGold
+                : label.bright
+                  ? 'rgba(255, 255, 255, 0.6)'
+                  : isFuture
+                    ? 'rgba(255, 255, 255, 0.12)'
+                    : 'rgba(255, 255, 255, 0.25)'
+            }
             textAnchor="middle"
           >
-            {label}
+            {label.text}
           </SvgText>
         );
       })}
@@ -546,8 +678,44 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     gap: SPACING.xs,
   },
-  chartTitle: {
+  chartHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: SPACING.sm,
+  },
+  chartTitle: {
+    marginBottom: 0,
+  },
+  rangeToggle: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: RADII.chip,
+    borderCurve: 'continuous',
+    padding: 2,
+    gap: 2,
+  },
+  rangeOption: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: RADII.chip - 2,
+    borderCurve: 'continuous',
+    minHeight: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  rangeOptionActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.10)',
+  },
+  rangeText: {
+    fontSize: 12,
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.35)',
+    letterSpacing: 0.5,
+  },
+  rangeTextActive: {
+    color: PALETTE.champagneGold,
+    fontWeight: '500',
   },
   chartContainer: {
     alignItems: 'center',
