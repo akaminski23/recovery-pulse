@@ -133,41 +133,12 @@ export default function SettingsScreen() {
           </View>
         </AnimatedElement>
 
-        {/* About Section */}
-        <AnimatedElement index={1} delay={80}>
-          <CaptionText style={styles.sectionTitle}>About</CaptionText>
-        </AnimatedElement>
-
-        <AnimatedCard index={2} delay={160}>
-          <View style={styles.aboutCard}>
-            <View style={styles.appIcon}>
-              <Ionicons
-                name="pulse"
-                size={32}
-                color={PALETTE.champagneGold}
-              />
-            </View>
-            <View style={styles.appInfo}>
-              <SafeText variant="headline">Recovery Pulse</SafeText>
-              <Pressable onPress={handleVersionTap} hitSlop={8}>
-                <SafeText variant="bodySmall" color={PALETTE.titaniumSilverMuted}>
-                  Version 1.0.0
-                </SafeText>
-              </Pressable>
-            </View>
-          </View>
-          <SafeText variant="body" style={styles.description}>
-            Track your daily recovery metrics and optimize your training with
-            data-driven insights.
-          </SafeText>
-        </AnimatedCard>
-
         {/* Subscription Section - Always visible for App Review */}
-        <AnimatedElement index={3} delay={240}>
+        <AnimatedElement index={1} delay={80}>
           <CaptionText style={styles.sectionTitle}>Subscription</CaptionText>
         </AnimatedElement>
 
-        <AnimatedCard index={4} delay={320}>
+        <AnimatedCard index={2} delay={160}>
           <View style={styles.subscriptionCard}>
             <View style={styles.subscriptionIcon}>
               <Ionicons
@@ -201,39 +172,13 @@ export default function SettingsScreen() {
           )}
         </AnimatedCard>
 
-        {/* Recovery Score Info */}
-        <AnimatedElement index={5} delay={400}>
-          <CaptionText style={styles.sectionTitle}>
-            Recovery Score Formula
-          </CaptionText>
+        {/* Recovery Model — unified card */}
+        <AnimatedElement index={3} delay={240}>
+          <CaptionText style={styles.sectionTitle}>Recovery Model</CaptionText>
         </AnimatedElement>
 
-        <AnimatedCard index={6} delay={480}>
-          <View style={styles.formulaSection}>
-            <FormulaItem
-              label="Sleep Quality"
-              weight="30%"
-              description="Direct impact from 1-10 rating"
-            />
-            <FormulaItem
-              label="Fatigue Level"
-              weight="35%"
-              description="Inverse (lower fatigue = better)"
-            />
-            <FormulaItem
-              label="Muscle Soreness"
-              weight="35%"
-              description="Inverse (lower soreness = better)"
-            />
-          </View>
-        </AnimatedCard>
-
-        {/* Score Ranges */}
-        <AnimatedElement index={7} delay={560}>
-          <CaptionText style={styles.sectionTitle}>Score Ranges</CaptionText>
-        </AnimatedElement>
-
-        <AnimatedCard index={8} delay={640}>
+        <AnimatedCard index={4} delay={320}>
+          {/* Score Ranges */}
           <View style={styles.rangesSection}>
             <ScoreRange
               range="80-100"
@@ -260,18 +205,60 @@ export default function SettingsScreen() {
               description="Focus on recovery"
             />
           </View>
+
+          {/* Divider */}
+          <View style={styles.modelDivider} />
+
+          {/* Formula weights — compact row */}
+          <SafeText variant="bodySmall" color={PALETTE.titaniumSilverMuted} style={styles.formulaLabel}>
+            Score is calculated from:
+          </SafeText>
+          <View style={styles.formulaChips}>
+            <FormulaChip label="Sleep" weight="40%" />
+            <FormulaChip label="Fatigue" weight="30%" />
+            <FormulaChip label="Soreness" weight="30%" />
+          </View>
+        </AnimatedCard>
+
+        {/* About Section - at the bottom */}
+        <AnimatedElement index={5} delay={400}>
+          <CaptionText style={styles.sectionTitle}>About</CaptionText>
+        </AnimatedElement>
+
+        <AnimatedCard index={6} delay={480}>
+          <View style={styles.aboutCard}>
+            <View style={styles.appIcon}>
+              <Ionicons
+                name="pulse"
+                size={32}
+                color={PALETTE.champagneGold}
+              />
+            </View>
+            <View style={styles.appInfo}>
+              <SafeText variant="headline">Recovery Pulse</SafeText>
+              <Pressable onPress={handleVersionTap} hitSlop={8}>
+                <SafeText variant="bodySmall" color={PALETTE.titaniumSilverMuted}>
+                  Version 1.0.0
+                </SafeText>
+              </Pressable>
+            </View>
+          </View>
+          <SafeText variant="body" style={styles.description}>
+            Track your daily recovery metrics and optimize your training with
+            data-driven insights.
+          </SafeText>
         </AnimatedCard>
 
         {/* Hidden Laboratory - Developer Options */}
         {labUnlocked && (
           <>
-            <AnimatedElement index={9} delay={720}>
+            <AnimatedElement index={7} delay={560}>
               <CaptionText style={styles.sectionTitle}>
                 Laboratory
               </CaptionText>
             </AnimatedElement>
 
-            <AnimatedCard index={10} delay={800}>
+            <AnimatedCard index={8} delay={640}>
               <View style={styles.labHeader}>
                 <Ionicons
                   name="flask"
@@ -322,26 +309,18 @@ export default function SettingsScreen() {
   );
 }
 
-interface FormulaItemProps {
+interface FormulaChipProps {
   label: string;
   weight: string;
-  description: string;
 }
 
-const FormulaItem: React.FC<FormulaItemProps> = ({
-  label,
-  weight,
-  description,
-}) => (
-  <View style={styles.formulaItem}>
-    <View style={styles.formulaHeader}>
-      <SafeText variant="title">{label}</SafeText>
-      <SafeText variant="caption" color={PALETTE.champagneGold}>
-        {weight}
-      </SafeText>
-    </View>
-    <SafeText variant="bodySmall" color={PALETTE.titaniumSilverMuted}>
-      {description}
+const FormulaChip: React.FC<FormulaChipProps> = ({ label, weight }) => (
+  <View style={styles.formulaChip}>
+    <SafeText variant="bodySmall" color={PALETTE.pureWhite}>
+      {label}
+    </SafeText>
+    <SafeText variant="caption" color={PALETTE.champagneGold}>
+      {weight}
     </SafeText>
   </View>
 );
@@ -415,16 +394,26 @@ const styles = StyleSheet.create({
   description: {
     lineHeight: 22,
   },
-  formulaSection: {
-    gap: SPACING.lg,
+  modelDivider: {
+    height: 0.5,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    marginVertical: SPACING.md,
   },
-  formulaItem: {
-    gap: SPACING.xs,
+  formulaLabel: {
+    marginBottom: SPACING.sm,
   },
-  formulaHeader: {
+  formulaChips: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    gap: SPACING.sm,
+  },
+  formulaChip: {
+    flex: 1,
     alignItems: 'center',
+    gap: 4,
+    paddingVertical: SPACING.sm,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderRadius: 8,
+    borderCurve: 'continuous',
   },
   rangesSection: {
     gap: SPACING.md,

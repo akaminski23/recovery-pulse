@@ -28,6 +28,8 @@ interface MetricSliderProps {
   lowLabel?: string;
   highLabel?: string;
   invertColors?: boolean;
+  redThreshold?: number;
+  greenThreshold?: number;
 }
 
 export const MetricSlider: React.FC<MetricSliderProps> = ({
@@ -39,6 +41,8 @@ export const MetricSlider: React.FC<MetricSliderProps> = ({
   lowLabel = 'Low',
   highLabel = 'High',
   invertColors = false,
+  redThreshold = 0.4,
+  greenThreshold = 0.7,
 }) => {
   const steps = Array.from({ length: max - min + 1 }, (_, i) => i + min);
 
@@ -70,9 +74,9 @@ export const MetricSlider: React.FC<MetricSliderProps> = ({
     const progress = (step - min) / (max - min);
     const adjustedProgress = invertColors ? 1 - progress : progress;
 
-    if (adjustedProgress < 0.4) {
+    if (adjustedProgress < redThreshold) {
       return PALETTE.danger;
-    } else if (adjustedProgress < 0.7) {
+    } else if (adjustedProgress < greenThreshold) {
       return PALETTE.warning;
     } else {
       return PALETTE.success;
@@ -139,20 +143,15 @@ const LuxurySliderStep: React.FC<LuxurySliderStepProps> = ({
   color,
   onPress,
 }) => {
-  const scale = useSharedValue(1);
   const glowIntensity = useSharedValue(0);
 
   const handlePressIn = () => {
     // Haptic on touch - feels mechanical
     Haptics.selectionAsync();
-    // DAMPED FLUIDITY - controlled expansion
-    scale.value = withSpring(1.25, SPRINGS.luxury);
     glowIntensity.value = withSpring(1, SPRINGS.luxury);
   };
 
   const handlePressOut = () => {
-    // SMOOTH RETURN - settle without vibration
-    scale.value = withSpring(isCurrentValue ? 1.12 : 1, SPRINGS.luxuryReturn);
     glowIntensity.value = withSpring(isCurrentValue ? 0.6 : 0, SPRINGS.luxuryReturn);
   };
 
@@ -165,22 +164,15 @@ const LuxurySliderStep: React.FC<LuxurySliderStepProps> = ({
     );
 
     return {
-      transform: [{ scale: scale.value }],
       shadowRadius,
       shadowOpacity: glowIntensity.value * 0.8,
     };
   });
 
-  // Set initial state for current value - DAMPED FLUIDITY
+  // Set glow for current value
   React.useEffect(() => {
-    if (isCurrentValue) {
-      scale.value = withSpring(1.12, SPRINGS.luxuryReturn);
-      glowIntensity.value = withSpring(0.6, SPRINGS.luxuryReturn);
-    } else {
-      scale.value = withSpring(1, SPRINGS.luxuryReturn);
-      glowIntensity.value = withSpring(0, SPRINGS.luxuryReturn);
-    }
-  }, [isCurrentValue, scale, glowIntensity]);
+    glowIntensity.value = withSpring(isCurrentValue ? 0.6 : 0, SPRINGS.luxuryReturn);
+  }, [isCurrentValue, glowIntensity]);
 
   return (
     <Pressable

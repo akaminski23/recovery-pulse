@@ -106,18 +106,26 @@ export default function DashboardScreen() {
               </View>
             </>
           ) : (
-            /* Empty State with BREATHING STAR */
+            /* Empty State with ghost ring */
             <View style={styles.emptyState}>
-              <BreathingStar size={56} />
-              <HeadlineText style={styles.emptyTitle}>No check-in yet</HeadlineText>
-              <SafeText variant="body" style={styles.emptyText}>
-                Complete your daily check-in to see your recovery score
-              </SafeText>
+              <RecoveryRing score={0} size={160} showLabel={false} />
+              <View style={styles.emptyTextContainer}>
+                <SafeText variant="bodySmall" style={styles.emptyHint}>
+                  Your Recovery Score
+                </SafeText>
+                <HeadlineText style={styles.emptyTitle}>
+                  Ready to check in?
+                </HeadlineText>
+                <SafeText variant="body" style={styles.emptyText}>
+                  Log how you feel today to unlock your personalized recovery score
+                </SafeText>
+              </View>
               <View style={styles.emptyButton}>
                 <SapphireButton
-                  title="Check In Now"
+                  title="Start Check-In"
                   onPress={() => router.push('/checkin')}
                   variant="primary"
+                  fullWidth
                 />
               </View>
             </View>
@@ -228,18 +236,31 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     alignItems: 'center',
-    gap: SPACING.md,
-    paddingVertical: SPACING.xl,
+    paddingVertical: SPACING.lg,
+  },
+  emptyTextContainer: {
+    alignItems: 'center',
+    gap: SPACING.sm,
+    marginTop: SPACING.lg,
+    marginBottom: SPACING.lg,
+  },
+  emptyHint: {
+    textAlign: 'center',
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    fontSize: 11,
+    color: PALETTE.titaniumSilverMuted,
   },
   emptyTitle: {
-    marginTop: SPACING.md,
+    textAlign: 'center',
   },
   emptyText: {
     textAlign: 'center',
-    paddingHorizontal: SPACING.lg,
+    paddingHorizontal: SPACING.md,
   },
   emptyButton: {
-    marginTop: SPACING.md,
+    width: '100%',
+    maxWidth: 240,
   },
   weeklyCard: {
     flexDirection: 'row',

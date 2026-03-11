@@ -7,10 +7,13 @@
 import React, { useMemo, useState } from 'react';
 import { View, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { format, parseISO, subDays, startOfDay } from 'date-fns';
+import { Ionicons } from '@expo/vector-icons';
 import Svg, {
   Path,
   Line,
+  Rect,
   Text as SvgText,
   Defs,
   LinearGradient,
@@ -18,20 +21,30 @@ import Svg, {
   Circle,
   G,
 } from 'react-native-svg';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { GradientBackground } from '../../components/GradientBackground';
 import { AnimatedCard, AnimatedElement } from '../../components/AnimatedCard';
+import { SapphireButton } from '../../components/SapphireButton';
 import { SafeText, HeadlineText, CaptionText } from '../../components/SafeText';
-import { BreathingStar } from '../../components/BreathingStar';
 import { PremiumGate } from '../../components/PremiumGate';
 import { SovereignPaywall } from '../../components/SovereignPaywall';
 import { useCheckIn } from '../../hooks/useCheckIn';
 import { useAccess } from '../../hooks/useAccess';
-import { PALETTE, SPACING } from '../../constants/theme';
+import { PALETTE, SPACING, RADII } from '../../constants/theme';
 import { getRecoveryStatus } from '../../db/schema';
+
+const GHOST_BARS = [35, 45, 55, 50, 65, 75, 70]; // Ascending pattern suggesting improvement
+const GHOST_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const GHOST_METRICS = [
+  { icon: 'trending-up' as const, label: 'Weekly Avg', value: '—' },
+  { icon: 'flame' as const, label: 'Streak', value: '—' },
+  { icon: 'trophy' as const, label: 'Best Day', value: '—' },
+];
 
 export default function TrendsScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { recentCheckIns, averageScore } = useCheckIn();
   const { isLocked } = useAccess();
   const [showPaywall, setShowPaywall] = useState(false);
@@ -98,38 +111,99 @@ export default function TrendsScreen() {
           </AnimatedCard>
         )}
 
-        {/* Chart */}
+        {/* Chart or Empty Preview */}
         {sortedCheckIns.length > 0 ? (
-          <AnimatedCard index={2} delay={160}>
-            <CaptionText style={styles.chartTitle}>Score History</CaptionText>
-            <View style={styles.chartContainer}>
-              <RecoveryChart data={sortedCheckIns} />
-            </View>
-          </AnimatedCard>
-        ) : (
-          <AnimatedCard index={2} delay={160}>
-            <View style={styles.emptyState}>
-              <BreathingStar size={48} />
-              <HeadlineText style={styles.emptyTitle}>No data yet</HeadlineText>
-              <SafeText variant="body" style={styles.emptyText}>
-                Complete check-ins to see your recovery trends
-              </SafeText>
-            </View>
-          </AnimatedCard>
-        )}
+          <>
+            <AnimatedCard index={2} delay={160}>
+              <CaptionText style={styles.chartTitle}>Score History</CaptionText>
+              <View style={styles.chartContainer}>
+                <RecoveryChart data={sortedCheckIns} />
+              </View>
+            </AnimatedCard>
 
-        {/* History List */}
-        {sortedCheckIns.length > 0 && (
-          <AnimatedElement index={3} delay={240}>
-            <View style={styles.historySection}>
-              <HeadlineText style={styles.sectionTitle}>History</HeadlineText>
-              {[...sortedCheckIns].reverse().map((checkIn, idx) => (
-                <AnimatedCard key={checkIn.id} index={idx} delay={320 + idx * 60} padding="md">
-                  <HistoryItem checkIn={checkIn} />
-                </AnimatedCard>
+            {/* History List */}
+            <AnimatedElement index={3} delay={240}>
+              <View style={styles.historySection}>
+                <HeadlineText style={styles.sectionTitle}>History</HeadlineText>
+                {[...sortedCheckIns].reverse().map((checkIn, idx) => (
+                  <AnimatedCard key={checkIn.id} index={idx} delay={320 + idx * 60} padding="md">
+                    <HistoryItem checkIn={checkIn} />
+                  </AnimatedCard>
+                ))}
+              </View>
+            </AnimatedElement>
+          </>
+        ) : (
+          <>
+            {/* Ghost Chart Preview */}
+            <AnimatedCard index={2} delay={160}>
+              <CaptionText style={styles.chartTitle}>Score History</CaptionText>
+              <View style={styles.ghostChartContainer}>
+                {GHOST_BARS.map((height, index) => (
+                  <Animated.View
+                    key={GHOST_DAYS[index]}
+                    entering={FadeInUp.delay(300 + index * 60).springify().damping(20).stiffness(100)}
+                    style={styles.ghostBarColumn}
+                  >
+                    <View style={styles.ghostBarTrack}>
+                      <View
+                        style={[
+                          styles.ghostBar,
+                          { height: `${height}%` },
+                        ]}
+                      />
+                    </View>
+                    <SafeText
+                      variant="bodySmall"
+                      style={styles.ghostDayLabel}
+                      numberOfLines={1}
+                    >
+                      {GHOST_DAYS[index]}
+                    </SafeText>
+                  </Animated.View>
+                ))}
+              </View>
+            </AnimatedCard>
+
+            {/* Ghost Metric Cards */}
+            <View style={styles.ghostMetricsRow}>
+              {GHOST_METRICS.map((metric, index) => (
+                <Animated.View
+                  key={metric.label}
+                  entering={FadeInUp.delay(700 + index * 80).springify().damping(20).stiffness(100)}
+                  style={styles.ghostMetricCard}
+                >
+                  <Ionicons
+                    name={metric.icon}
+                    size={20}
+                    color={PALETTE.champagneGold}
+                    style={{ opacity: 0.4 }}
+                  />
+                  <SafeText variant="headline" style={styles.ghostMetricValue}>
+                    {metric.value}
+                  </SafeText>
+                  <SafeText variant="bodySmall" style={styles.ghostMetricLabel}>
+                    {metric.label}
+                  </SafeText>
+                </Animated.View>
               ))}
             </View>
-          </AnimatedElement>
+
+            {/* CTA */}
+            <Animated.View
+              entering={FadeInUp.delay(960).springify().damping(20).stiffness(100)}
+              style={styles.emptyCta}
+            >
+              <SafeText variant="body" style={styles.emptyText}>
+                Complete your first check-in to start tracking recovery trends
+              </SafeText>
+              <SapphireButton
+                title="Start Check-In"
+                onPress={() => router.push('/checkin')}
+                variant="primary"
+              />
+            </Animated.View>
+          </>
         )}
       </ScrollView>
       </PremiumGate>
@@ -481,16 +555,72 @@ const styles = StyleSheet.create({
     // Allow glow to breathe - no overflow clipping
     overflow: 'visible',
   },
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: SPACING.xl,
-    gap: SPACING.md,
+  ghostChartContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    height: 140,
+    paddingTop: SPACING.sm,
   },
-  emptyTitle: {
-    marginTop: SPACING.md,
+  ghostBarColumn: {
+    flex: 1,
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  ghostBarTrack: {
+    width: 20,
+    height: 110,
+    justifyContent: 'flex-end',
+    borderRadius: 10,
+    borderCurve: 'continuous',
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+  },
+  ghostBar: {
+    width: '100%',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    borderCurve: 'continuous',
+  },
+  ghostDayLabel: {
+    fontSize: 11,
+    color: PALETTE.mutedWhite,
+    letterSpacing: 0.5,
+  },
+  ghostMetricsRow: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+  },
+  ghostMetricCard: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderRadius: RADII.button,
+    borderCurve: 'continuous',
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+    padding: SPACING.md,
+    alignItems: 'center',
+    gap: 4,
+  },
+  ghostMetricValue: {
+    fontSize: 24,
+    fontWeight: '300',
+    color: PALETTE.mutedWhite,
+  },
+  ghostMetricLabel: {
+    fontSize: 11,
+    color: PALETTE.mutedWhite,
+    letterSpacing: 0.5,
+  },
+  emptyCta: {
+    alignItems: 'center',
+    gap: SPACING.lg,
   },
   emptyText: {
     textAlign: 'center',
+    paddingHorizontal: SPACING.md,
+    color: PALETTE.subtleWhite,
   },
   historySection: {
     gap: SPACING.md,

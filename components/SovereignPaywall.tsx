@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
 import { SafeText, HeadlineText, CaptionText } from './SafeText';
@@ -29,9 +29,9 @@ interface SovereignPaywallProps {
 }
 
 const FEATURES = [
-  { icon: 'activity' as const, label: 'HRV Analytics' },
-  { icon: 'cpu' as const, label: 'AI Recovery Insights' },
-  { icon: 'database' as const, label: 'Bio-Data Vault' },
+  { icon: 'pulse-outline' as const, label: 'Recovery Analytics' },
+  { icon: 'trending-up-outline' as const, label: 'Smart Recovery Insights' },
+  { icon: 'server-outline' as const, label: 'Bio-Data Vault' },
 ];
 
 const LEGAL_URLS = {
@@ -124,13 +124,13 @@ export const SovereignPaywall: React.FC<SovereignPaywallProps> = ({
             onPress={handleClose}
             hitSlop={16}
           >
-            <Feather name="x" size={24} color={PALETTE.subtleWhite} />
+            <Ionicons name="close" size={24} color={PALETTE.subtleWhite} />
           </Pressable>
 
           {/* Crown Icon */}
           <View style={styles.iconContainer}>
-            <Feather
-              name="award"
+            <Ionicons
+              name="diamond"
               size={64}
               color={PALETTE.champagneGold}
               style={styles.crownIcon}
@@ -146,7 +146,7 @@ export const SovereignPaywall: React.FC<SovereignPaywallProps> = ({
           <View style={styles.featuresContainer}>
             {FEATURES.map((feature) => (
               <View key={feature.label} style={styles.featureRow}>
-                <Feather
+                <Ionicons
                   name={feature.icon}
                   size={20}
                   color={PALETTE.champagneGold}
@@ -186,7 +186,7 @@ export const SovereignPaywall: React.FC<SovereignPaywallProps> = ({
               </SafeText>
               {selectedPlan === 'annual' && (
                 <View style={styles.checkmark}>
-                  <Feather name="check-circle" size={20} color={PALETTE.champagneGold} />
+                  <Ionicons name="checkmark-circle" size={20} color={PALETTE.champagneGold} />
                 </View>
               )}
             </Pressable>
@@ -214,7 +214,7 @@ export const SovereignPaywall: React.FC<SovereignPaywallProps> = ({
               </SafeText>
               {selectedPlan === 'monthly' && (
                 <View style={styles.checkmark}>
-                  <Feather name="check-circle" size={20} color={PALETTE.champagneGold} />
+                  <Ionicons name="checkmark-circle" size={20} color={PALETTE.champagneGold} />
                 </View>
               )}
             </Pressable>

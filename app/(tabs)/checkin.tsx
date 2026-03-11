@@ -8,10 +8,16 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import Svg, { Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
+import Animated, {
+  FadeIn,
+  useSharedValue,
+  useAnimatedProps,
+  withSpring,
+} from 'react-native-reanimated';
 
 import { GradientBackground } from '../../components/GradientBackground';
 import { AnimatedCard, AnimatedElement } from '../../components/AnimatedCard';
@@ -21,7 +27,16 @@ import { MetricSlider } from '../../components/MetricSlider';
 import { useCheckIn } from '../../hooks/useCheckIn';
 import { useHaptic } from '../../hooks/useHaptic';
 import { SPACING } from '../../constants/theme';
+import { SPRINGS } from '../../constants/springs';
 import { calculateRecoveryScore, getRecoveryStatus } from '../../db/schema';
+
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+
+const RING_SIZE = 140;
+const STROKE_WIDTH = 8;
+const RING_CENTER = RING_SIZE / 2;
+const RING_RADIUS = (RING_SIZE - STROKE_WIDTH) / 2;
+const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
 export default function CheckInScreen() {
   const insets = useSafeAreaInsets();
@@ -46,8 +61,27 @@ export default function CheckInScreen() {
   }, [todayCheckIn]);
 
   // Calculate preview score
-  const previewScore = calculateRecoveryScore(sleepQuality, fatigue, soreness);
+  const previewScore = calculateRecoveryScore(sleepQuality, fatigue, soreness, sleepHours);
   const previewStatus = getRecoveryStatus(previewScore);
+
+  // Animated ring progress
+  const ringProgress = useSharedValue(0);
+
+  useEffect(() => {
+    ringProgress.value = withSpring(previewScore / 100, {
+      damping: 28,
+      stiffness: 80,
+      mass: 1,
+    });
+  }, [previewScore, ringProgress]);
+
+  const ringAnimatedProps = useAnimatedProps(() => ({
+    strokeDashoffset: RING_CIRCUMFERENCE * (1 - ringProgress.value),
+  }));
+
+  // Pick gradient colors based on score
+  const ringGradientStart = previewStatus.color;
+  const ringGradientEnd = previewStatus.color.replace(/[\d.]+\)$/, '0.4)');
 
   const handleSubmit = () => {
     try {
@@ -101,20 +135,51 @@ export default function CheckInScreen() {
           </View>
         </AnimatedElement>
 
-        {/* Score Preview - Hero Card */}
+        {/* Score Preview - Hero Card with Ring */}
         <AnimatedCard index={1} delay={100}>
-          {/* DAMPED FLUIDITY - slower, heavier fade */}
           <Animated.View
             entering={FadeIn.delay(400).duration(800)}
             style={styles.previewContent}
           >
             <CaptionText>Recovery Score Preview</CaptionText>
-            <SafeText variant="metric" color={previewStatus.color} style={styles.previewScore}>
-              {previewScore}
-            </SafeText>
-            <SafeText variant="bodySmall" color={previewStatus.color}>
-              {previewStatus.label}
-            </SafeText>
+            <View style={styles.ringContainer}>
+              <Svg width={RING_SIZE} height={RING_SIZE}>
+                <Defs>
+                  <LinearGradient id="scoreRing" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <Stop offset="0%" stopColor={ringGradientStart} />
+                    <Stop offset="100%" stopColor={ringGradientEnd} />
+                  </LinearGradient>
+                </Defs>
+                <Circle
+                  cx={RING_CENTER}
+                  cy={RING_CENTER}
+                  r={RING_RADIUS}
+                  stroke="rgba(255, 255, 255, 0.06)"
+                  strokeWidth={STROKE_WIDTH}
+                  fill="none"
+                />
+                <AnimatedCircle
+                  cx={RING_CENTER}
+                  cy={RING_CENTER}
+                  r={RING_RADIUS}
+                  stroke="url(#scoreRing)"
+                  strokeWidth={STROKE_WIDTH}
+                  strokeLinecap="round"
+                  fill="none"
+                  strokeDasharray={RING_CIRCUMFERENCE}
+                  animatedProps={ringAnimatedProps}
+                  transform={`rotate(-90 ${RING_CENTER} ${RING_CENTER})`}
+                />
+              </Svg>
+              <View style={styles.ringCenter}>
+                <Text style={[styles.ringScore, { color: previewStatus.color }]}>
+                  {previewScore}
+                </Text>
+                <Text style={[styles.ringLabel, { color: previewStatus.color }]}>
+                  {previewStatus.label}
+                </Text>
+              </View>
+            </View>
           </Animated.View>
         </AnimatedCard>
 
@@ -124,10 +189,12 @@ export default function CheckInScreen() {
             label="Sleep Duration"
             value={sleepHours}
             onChange={setSleepHours}
-            min={3}
-            max={12}
-            lowLabel="3 hours"
-            highLabel="12 hours"
+            min={4}
+            max={10}
+            lowLabel="4 hours"
+            highLabel="10 hours"
+            redThreshold={0.3}
+            greenThreshold={0.5}
           />
         </AnimatedCard>
 
@@ -196,10 +263,31 @@ const styles = StyleSheet.create({
   },
   previewContent: {
     alignItems: 'center',
-    gap: SPACING.xs,
+    gap: SPACING.sm,
   },
-  previewScore: {
-    fontSize: 64,
-    marginVertical: SPACING.sm,
+  ringContainer: {
+    width: RING_SIZE,
+    height: RING_SIZE,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  ringCenter: {
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 2,
+  },
+  ringScore: {
+    fontSize: 40,
+    lineHeight: 48,
+    fontWeight: '300',
+    letterSpacing: -1,
+  },
+  ringLabel: {
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '500',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
   },
 });

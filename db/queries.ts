@@ -27,7 +27,8 @@ export const createCheckIn = (data: {
   const recoveryScore = calculateRecoveryScore(
     data.sleepQuality,
     data.fatigue,
-    data.soreness
+    data.soreness,
+    data.sleepHours
   );
 
   const newCheckIn: NewCheckIn = {
@@ -112,7 +113,8 @@ export const updateCheckIn = (
   const recoveryScore = calculateRecoveryScore(
     updatedData.sleepQuality,
     updatedData.fatigue,
-    updatedData.soreness
+    updatedData.soreness,
+    updatedData.sleepHours
   );
 
   return db

@@ -41,8 +41,8 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Pulse',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="pulse-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'pulse' : 'pulse-outline'} size={size} color={color} />
           ),
         }}
       />
@@ -50,8 +50,8 @@ export default function TabLayout() {
         name="checkin"
         options={{
           title: 'Check In',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="add-circle-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'add-circle' : 'add-circle-outline'} size={size} color={color} />
           ),
         }}
       />
@@ -59,8 +59,8 @@ export default function TabLayout() {
         name="trends"
         options={{
           title: 'Trends',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="trending-up-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'trending-up' : 'trending-up-outline'} size={size} color={color} />
           ),
         }}
       />
@@ -68,8 +68,8 @@ export default function TabLayout() {
         name="settings"
         options={{
           title: 'Settings',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'settings' : 'settings-outline'} size={size} color={color} />
           ),
         }}
       />

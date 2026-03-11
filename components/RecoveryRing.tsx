@@ -38,7 +38,7 @@ export const RecoveryRing: React.FC<RecoveryRingProps> = ({
   const circumference = 2 * Math.PI * radius;
 
   useEffect(() => {
-    progress.value = withSpring(score / 100, SPRINGS.smooth);
+    progress.value = withSpring(score / 100, { damping: 28, stiffness: 80, mass: 1 });
   }, [score, progress]);
 
   const animatedProps = useAnimatedProps(() => ({
