@@ -431,7 +431,7 @@ const RecoveryChart: React.FC<ChartProps> = ({ data, range }) => {
     ? (weekData ?? { points: [], xLabels: [] })
     : (monthData ?? { points: [], xLabels: [] });
 
-  // ── Dynamic color gradient based on scores ──
+  // ── Dynamic color gradient with intermediate zone transitions ──
   const gradientStops = useMemo(() => {
     if (points.length === 0) {
       const c = 'rgba(80, 200, 120, 0.9)';
@@ -441,12 +441,47 @@ const RecoveryChart: React.FC<ChartProps> = ({ data, range }) => {
       const c = getRecoveryStatus(points[0].score).color;
       return [{ offset: 0, color: c }, { offset: 1, color: c }];
     }
-    return points.map((p) => ({
-      offset: graphWidth > 0
+
+    const stops: Array<{ offset: number; color: string }> = [];
+    const yellowColor = getRecoveryStatus(65).color;
+    // Zone boundaries: add yellow stops at green/yellow (80) and yellow/red (50)
+    const zoneThresholds = [
+      { boundary: 80, color: yellowColor },
+      { boundary: 50, color: yellowColor },
+    ];
+
+    for (let i = 0; i < points.length; i++) {
+      const p = points[i];
+      const offset = graphWidth > 0
         ? Math.max(0, Math.min(1, (p.x - paddingLeft) / graphWidth))
-        : 0,
-      color: getRecoveryStatus(p.score).color,
-    }));
+        : 0;
+      stops.push({ offset, color: getRecoveryStatus(p.score).color });
+
+      // Add intermediate stops at zone boundaries between consecutive points
+      if (i < points.length - 1) {
+        const next = points[i + 1];
+        const scoreA = p.score;
+        const scoreB = next.score;
+        const xA = p.x;
+        const xB = next.x;
+        const minScore = Math.min(scoreA, scoreB);
+        const maxScore = Math.max(scoreA, scoreB);
+
+        for (const { boundary, color } of zoneThresholds) {
+          if (boundary > minScore && boundary < maxScore) {
+            const t = Math.abs(scoreA - boundary) / Math.abs(scoreA - scoreB);
+            const bx = xA + t * (xB - xA);
+            const bOffset = graphWidth > 0
+              ? Math.max(0, Math.min(1, (bx - paddingLeft) / graphWidth))
+              : 0;
+            stops.push({ offset: bOffset, color });
+          }
+        }
+      }
+    }
+
+    stops.sort((a, b) => a.offset - b.offset);
+    return stops;
   }, [points, graphWidth]);
 
   // ── Bezier path generation ──
