@@ -32,6 +32,55 @@ import { calculateRecoveryScore, getRecoveryStatus } from '../../db/schema';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
+const SLEEP_HOURS_DESCRIPTIONS: Record<number, string> = {
+  4: 'Severely sleep deprived — expect low recovery',
+  5: 'Below minimum — cognitive function impaired',
+  6: 'Slightly short — may feel okay but recovery suffers',
+  7: 'Solid night — meets recommended minimum',
+  8: 'Optimal — peak recovery and mental clarity',
+  9: 'Extended recovery — great after hard training',
+  10: 'Maximum rest — ideal for illness or overreaching',
+};
+
+const SLEEP_QUALITY_DESCRIPTIONS: Record<number, string> = {
+  1: 'Barely slept — tossing and turning all night',
+  2: 'Very restless — woke up many times',
+  3: 'Poor — took long to fall asleep, light sleep',
+  4: 'Below average — some interruptions, unrefreshing',
+  5: 'Average — nothing special, woke up once or twice',
+  6: 'Decent — mostly uninterrupted, mild grogginess',
+  7: 'Good — fell asleep quickly, woke up fairly rested',
+  8: 'Very good — deep sleep, woke up refreshed',
+  9: 'Excellent — slept through the night, full of energy',
+  10: 'Perfect — best sleep possible, completely recharged',
+};
+
+const FATIGUE_DESCRIPTIONS: Record<number, string> = {
+  1: 'Fully energized — ready for anything',
+  2: 'Very fresh — minimal fatigue, high motivation',
+  3: 'Slightly tired — nothing a warm-up won\'t fix',
+  4: 'Mild fatigue — functional but not 100%',
+  5: 'Moderate — noticeable tiredness, can still train',
+  6: 'Fairly tired — would prefer a lighter session',
+  7: 'Tired — low motivation, body feels heavy',
+  8: 'Very fatigued — struggling to focus or move',
+  9: 'Exhausted — rest day strongly recommended',
+  10: 'Completely drained — unable to perform any activity',
+};
+
+const SORENESS_DESCRIPTIONS: Record<number, string> = {
+  1: 'No soreness — muscles feel completely normal',
+  2: 'Barely noticeable — slight tightness if you focus',
+  3: 'Mild — feel it during movement, goes away quickly',
+  4: 'Moderate mild — aware of soreness during daily tasks',
+  5: 'Moderate — clear soreness, manageable with warm-up',
+  6: 'Significant — uncomfortable during certain movements',
+  7: 'High — affects range of motion and daily activity',
+  8: 'Very sore — pain during most movements',
+  9: 'Severe — difficult to perform basic tasks',
+  10: 'Extreme — possible injury, seek medical advice',
+};
+
 const RING_SIZE = 140;
 const STROKE_WIDTH = 8;
 const RING_CENTER = RING_SIZE / 2;
@@ -195,6 +244,7 @@ export default function CheckInScreen() {
             highLabel="10 hours"
             redThreshold={0.3}
             greenThreshold={0.5}
+            descriptions={SLEEP_HOURS_DESCRIPTIONS}
           />
         </AnimatedCard>
 
@@ -206,6 +256,7 @@ export default function CheckInScreen() {
             onChange={setSleepQuality}
             lowLabel="Poor"
             highLabel="Excellent"
+            descriptions={SLEEP_QUALITY_DESCRIPTIONS}
           />
         </AnimatedCard>
 
@@ -218,6 +269,7 @@ export default function CheckInScreen() {
             lowLabel="Energized"
             highLabel="Exhausted"
             invertColors
+            descriptions={FATIGUE_DESCRIPTIONS}
           />
         </AnimatedCard>
 
@@ -230,6 +282,7 @@ export default function CheckInScreen() {
             lowLabel="None"
             highLabel="Severe"
             invertColors
+            descriptions={SORENESS_DESCRIPTIONS}
           />
         </AnimatedCard>
 

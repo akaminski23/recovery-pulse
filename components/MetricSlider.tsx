@@ -8,6 +8,7 @@
 import React, { useCallback } from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
 import Animated, {
+  FadeIn,
   useSharedValue,
   useAnimatedStyle,
   withSpring,
@@ -30,6 +31,7 @@ interface MetricSliderProps {
   invertColors?: boolean;
   redThreshold?: number;
   greenThreshold?: number;
+  descriptions?: Record<number, string>;
 }
 
 export const MetricSlider: React.FC<MetricSliderProps> = ({
@@ -43,6 +45,7 @@ export const MetricSlider: React.FC<MetricSliderProps> = ({
   invertColors = false,
   redThreshold = 0.4,
   greenThreshold = 0.7,
+  descriptions,
 }) => {
   const steps = Array.from({ length: max - min + 1 }, (_, i) => i + min);
 
@@ -120,6 +123,24 @@ export const MetricSlider: React.FC<MetricSliderProps> = ({
           );
         })}
       </View>
+
+      {/* Dynamic description */}
+      {descriptions && descriptions[value] && (
+        <Animated.View
+          key={value}
+          entering={FadeIn.duration(200)}
+          style={styles.descriptionContainer}
+        >
+          <SafeText
+            variant="bodySmall"
+            color={PALETTE.subtleWhite}
+            style={styles.description}
+            numberOfLines={2}
+          >
+            {descriptions[value]}
+          </SafeText>
+        </Animated.View>
+      )}
 
       {/* Labels */}
       <View style={styles.labels}>
@@ -227,6 +248,13 @@ const styles = StyleSheet.create({
     borderCurve: 'continuous',
     // Shadow for glow effect
     shadowOffset: { width: 0, height: 0 },
+  },
+  descriptionContainer: {
+    marginTop: -SPACING.xs,
+  },
+  description: {
+    textAlign: 'center',
+    lineHeight: 18,
   },
   labels: {
     flexDirection: 'row',
