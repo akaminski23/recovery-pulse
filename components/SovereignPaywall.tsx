@@ -217,8 +217,8 @@ export const SovereignPaywall: React.FC<SovereignPaywallProps> = ({
                   /month
                 </SafeText>
               </HeadlineText>
-              <SafeText variant="bodySmall" color={PALETTE.titaniumSilverMuted}>
-                Billed monthly
+              <SafeText variant="bodySmall" color={PALETTE.success}>
+                7-Day Free Trial
               </SafeText>
               {selectedPlan === 'monthly' && (
                 <View style={styles.checkmark}>
@@ -242,11 +242,7 @@ export const SovereignPaywall: React.FC<SovereignPaywallProps> = ({
             ) : (
               <>
                 <SapphireButton
-                  title={
-                    selectedPlan === 'annual'
-                      ? 'START 7-DAY FREE TRIAL'
-                      : 'SUBSCRIBE NOW'
-                  }
+                  title="START 7-DAY FREE TRIAL"
                   onPress={handleSubscribe}
                   variant="primary"
                 />
@@ -258,7 +254,7 @@ export const SovereignPaywall: React.FC<SovereignPaywallProps> = ({
                 >
                   {selectedPlan === 'annual'
                     ? `Then ${annualPrice || '$79.99'}/year. Cancel anytime.`
-                    : 'Cancel anytime.'}
+                    : `Then ${monthlyPrice || '$12.99'}/month. Cancel anytime.`}
                 </SafeText>
 
                 {/* Restore */}
@@ -282,7 +278,7 @@ export const SovereignPaywall: React.FC<SovereignPaywallProps> = ({
               purchase. Subscription automatically renews unless cancelled at least
               24 hours before the end of the current period. Manage subscriptions
               in App Store {'>'} Account {'>'} Subscriptions.
-              {selectedPlan === 'annual' ? ' 7-day free trial available.' : ''}
+              {' '}7-day free trial available for both plans.
             </SafeText>
           </View>
 

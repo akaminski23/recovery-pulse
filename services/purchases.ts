@@ -14,7 +14,7 @@ const ENTITLEMENT_ID = 'Recovery Pulse Pro';
 // Product identifiers (must match App Store Connect)
 export const PRODUCT_IDS = {
   ANNUAL: 'com.recoverypulse.app.annual',    // $79.99/year with 7-day trial
-  MONTHLY: 'com.recoverypulse.app.monthly',  // $12.99/month no trial
+  MONTHLY: 'com.recoverypulse.app.monthly',  // $12.99/month with 7-day trial
 } as const;
 
 // Check if native module is available
