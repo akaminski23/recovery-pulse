@@ -107,7 +107,6 @@ export const getCustomerInfo = async (): Promise<CustomerInfo | null> => {
   }
   try {
     const info = await Purchases.getCustomerInfo();
-    console.log('[Purchases] CustomerInfo entitlements:', JSON.stringify(Object.keys(info.entitlements.active)));
     return info;
   } catch (error) {
     console.error('[Purchases] Failed to get customer info:', error);
@@ -230,24 +229,18 @@ export const purchasePackage = async (
   }
   try {
     const { customerInfo } = await Purchases.purchasePackage(pkg);
-    console.log('[Purchases] Purchase success. Active entitlements:', JSON.stringify(Object.keys(customerInfo.entitlements.active)));
     const isPro = checkProEntitlement(customerInfo);
-    console.log('[Purchases] isPro:', isPro, '| Looking for entitlement:', ENTITLEMENT_ID);
     if (isPro) setProStatus(true);
     return { success: isPro, customerInfo };
   } catch (error: any) {
-    console.log('[Purchases] Purchase threw error, re-checking entitlement...');
     // Always re-check entitlement — purchase may have succeeded despite error
     // (sandbox race condition, "already subscribed" dialog, etc.)
     try {
       const freshInfo = await Purchases.getCustomerInfo();
-      console.log('[Purchases] Re-check entitlements:', JSON.stringify(Object.keys(freshInfo.entitlements.active)));
       if (checkProEntitlement(freshInfo)) {
-        console.log('[Purchases] Re-check: user IS Pro! Closing paywall.');
         setProStatus(true);
         return { success: true, customerInfo: freshInfo };
       }
-      console.log('[Purchases] Re-check: user is NOT Pro.');
     } catch {
       // ignore re-check failure
     }

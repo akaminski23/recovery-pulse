@@ -217,8 +217,8 @@ export const SovereignPaywall: React.FC<SovereignPaywallProps> = ({
                   /month
                 </SafeText>
               </HeadlineText>
-              <SafeText variant="bodySmall" color={PALETTE.success}>
-                7-Day Free Trial
+              <SafeText variant="bodySmall" color={PALETTE.titaniumSilverMuted}>
+                Billed monthly
               </SafeText>
               {selectedPlan === 'monthly' && (
                 <View style={styles.checkmark}>
@@ -273,6 +273,17 @@ export const SovereignPaywall: React.FC<SovereignPaywallProps> = ({
                 </Pressable>
               </>
             )}
+          </View>
+
+          {/* Legal Disclosure */}
+          <View style={styles.legalDisclosure}>
+            <SafeText variant="bodySmall" color={PALETTE.titaniumSilverMuted} style={styles.disclosureText}>
+              Payment will be charged to your Apple ID account at confirmation of
+              purchase. Subscription automatically renews unless cancelled at least
+              24 hours before the end of the current period. Manage subscriptions
+              in App Store {'>'} Account {'>'} Subscriptions.
+              {selectedPlan === 'annual' ? ' 7-day free trial available.' : ''}
+            </SafeText>
           </View>
 
           {/* Legal Footer */}
@@ -430,7 +441,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: SPACING.xl,
-    opacity: 0.4,
+    opacity: 0.6,
+  },
+  legalDisclosure: {
+    width: '100%',
+    maxWidth: 320,
+    marginTop: SPACING.md,
+    paddingHorizontal: SPACING.sm,
+  },
+  disclosureText: {
+    textAlign: 'center',
+    lineHeight: 16,
+    fontSize: 11,
   },
   legalLink: {
     color: PALETTE.pureWhite,

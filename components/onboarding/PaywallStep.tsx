@@ -225,8 +225,8 @@ export const PaywallStep: React.FC<PaywallStepProps> = ({ onComplete }) => {
           <SafeText style={styles.planPeriod} numberOfLines={1}>
             per month
           </SafeText>
-          <SafeText style={styles.planTrial} numberOfLines={1}>
-            7-day free trial
+          <SafeText style={styles.planNoTrial} numberOfLines={1}>
+            No trial
           </SafeText>
         </Pressable>
       </Animated.View>

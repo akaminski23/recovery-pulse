@@ -212,7 +212,7 @@ export default function SettingsScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await Share.share({
       message: 'Track your daily recovery with Recovery Pulse — optimize your training with data-driven insights.',
-      url: 'https://apps.apple.com/app/recovery-pulse/id6741206981',
+      url: 'https://apps.apple.com/app/recovery-pulse/id6758175991',
     });
   };
 
