@@ -1,0 +1,31 @@
+# Recovery Pulse - Trends Screen Test
+# Tests the trends/history screen: chart, weekly average, history entries
+appId: com.recoverypulse.app
+---
+
+- launchApp:
+    clearState: false
+- waitForAnimationToEnd
+- tapOn:
+    point: "12%,93%"
+- assertVisible: "Recovery Pulse"
+
+# Navigate to Trends tab
+- tapOn:
+    point: "62%,93%"
+- waitForAnimationToEnd
+
+# Verify Trends screen loaded
+- assertVisible: "Recovery Trends"
+- assertVisible: "WEEKLY AVERAGE"
+- assertVisible: "SCORE HISTORY"
+
+# Verify range toggle
+- assertVisible: "7 Days"
+- assertVisible: "30 Days"
+
+# Verify history section
+- assertVisible: "History"
+
+# Take screenshot
+- takeScreenshot: trends_verified

@@ -1,0 +1,53 @@
+# Recovery Pulse - Full Onboarding Flow Test
+# Tests the complete 5-step onboarding: Welcome → How It Works → Your Score → Wow Moment → Paywall
+# PREREQUISITE: Onboarding must be reset first (Settings > Replay Onboarding)
+appId: com.recoverypulse.app
+---
+
+- launchApp:
+    clearState: true
+
+# Step 1: Welcome
+- assertVisible: "Know when to push"
+- assertVisible: "BEGIN"
+- takeScreenshot: onboarding_1_welcome
+- tapOn: "BEGIN"
+
+# Step 2: How It Works
+- assertVisible: "30 Seconds"
+- assertVisible: "Sleep Quality"
+- assertVisible: "Fatigue Level"
+- assertVisible: "Muscle Soreness"
+- assertVisible: "CONTINUE"
+- takeScreenshot: onboarding_2_howitworks
+- tapOn: "CONTINUE"
+
+# Step 3: Your Score
+- assertVisible: "Your Recovery"
+- assertVisible: "Optimal"
+- assertVisible: "CONTINUE"
+- takeScreenshot: onboarding_3_yourscore
+- tapOn: "CONTINUE"
+
+# Step 4: Wow Moment (auto-advances after ~7.2s)
+- assertVisible: "Track Your"
+- takeScreenshot: onboarding_4_wowmoment
+
+# Step 5: Paywall (wait for auto-advance from step 4 + animation)
+- assertVisible:
+    text: "Unlock Your"
+    timeout: 15000
+- assertVisible: "START 7-DAY FREE TRIAL"
+- assertVisible: "Maybe later"
+- assertVisible: "Annual"
+- assertVisible: "Monthly"
+- takeScreenshot: onboarding_5_paywall
+
+# Skip paywall
+- tapOn: "Maybe later"
+
+# Should land on main Dashboard
+- assertVisible:
+    text: "Recovery Pulse"
+    timeout: 5000
+- takeScreenshot: onboarding_complete

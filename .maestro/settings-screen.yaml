@@ -1,0 +1,24 @@
+# Recovery Pulse - Settings Screen Test
+# Tests settings screen elements and navigation
+appId: com.recoverypulse.app
+---
+
+- launchApp
+
+# Wait for dashboard to fully load
+- assertVisible: "Recovery Pulse"
+- assertVisible: "GOOD"
+
+# Navigate to Settings via tab bar
+- tapOn:
+    point: "87%,93%"
+
+# Wait for staggered animations to finish
+- waitForAnimationToEnd
+
+# Verify Settings screen loaded
+- assertVisible: "SUBSCRIPTION"
+- assertVisible: "Recovery Pulse Pro"
+- assertVisible: "Daily Reminder"
+- assertVisible: "RECOVERY MODEL"
+- takeScreenshot: settings_verified

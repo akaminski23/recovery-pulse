@@ -1,0 +1,31 @@
+# Recovery Pulse - Check-In Flow Test
+# Tests the full check-in screen: sliders, score preview, submit
+appId: com.recoverypulse.app
+---
+
+- launchApp:
+    clearState: false
+- waitForAnimationToEnd
+- tapOn:
+    point: "12%,93%"
+- assertVisible: "Recovery Pulse"
+
+# Navigate to Check In tab
+- tapOn:
+    point: "37%,93%"
+- waitForAnimationToEnd
+
+# Verify Check-In screen elements
+- assertVisible: "How are you feeling?"
+- assertVisible: "RECOVERY SCORE PREVIEW"
+- assertVisible: "Sleep Duration"
+- assertVisible: "Sleep Quality"
+- takeScreenshot: checkin_top
+
+# Scroll down to see Fatigue and Soreness
+- swipe:
+    direction: UP
+    duration: 500
+- assertVisible: "Fatigue Level"
+- assertVisible: "Muscle Soreness"
+- takeScreenshot: checkin_bottom

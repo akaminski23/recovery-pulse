@@ -1,0 +1,9 @@
+# Recovery Pulse - Smoke Test
+# Quick sanity check: app launches and renders correctly
+appId: com.recoverypulse.app
+---
+
+- launchApp
+- assertVisible: "Recovery Pulse"
+- assertVisible: "GOOD"
+- takeScreenshot: smoke_result

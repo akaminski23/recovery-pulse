@@ -1,0 +1,30 @@
+# Recovery Pulse - Tab Navigation Test
+# Tests that all 4 tabs are accessible and render correctly
+appId: com.recoverypulse.app
+---
+
+- launchApp
+
+# Tab 1: Pulse (Dashboard) — default tab
+- assertVisible: "Recovery Pulse"
+- takeScreenshot: tab_dashboard
+
+# Tab 2: Check In — tap tab bar (~93% down, 2nd tab ~37%)
+- tapOn:
+    point: "37%,93%"
+- takeScreenshot: tab_checkin
+
+# Tab 3: Trends — 3rd tab ~62%
+- tapOn:
+    point: "62%,93%"
+- takeScreenshot: tab_trends
+
+# Tab 4: Settings — 4th tab ~87%
+- tapOn:
+    point: "87%,93%"
+- takeScreenshot: tab_settings
+
+# Navigate back to Pulse — 1st tab ~12%
+- tapOn:
+    point: "12%,93%"
+- assertVisible: "Recovery Pulse"

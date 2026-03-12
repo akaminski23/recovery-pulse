@@ -1,0 +1,40 @@
+# Recovery Pulse - Paywall Test
+# Tests paywall UI elements and skip functionality
+appId: com.recoverypulse.app
+---
+
+- launchApp
+
+# Navigate to Settings
+- tapOn: "Settings"
+
+# Open paywall from dev tools (if available)
+- scrollUntilVisible:
+    element: "Show Paywall"
+    direction: DOWN
+- tapOn: "Show Paywall"
+
+# Verify paywall elements
+- assertVisible:
+    text: "Unlock Your"
+    timeout: 5000
+
+# Plan cards
+- assertVisible: "Annual"
+- assertVisible: "Monthly"
+- assertVisible: "SAVE 49%"
+
+# Trial info
+- assertVisible: "7-day free trial"
+
+# CTA
+- assertVisible: "START 7-DAY FREE TRIAL"
+
+# Legal
+- assertVisible: "Privacy Policy"
+- assertVisible: "Terms of Use"
+- assertVisible: "Restore Purchases"
+
+# Skip option
+- assertVisible: "Maybe later"
+- tapOn: "Maybe later"
